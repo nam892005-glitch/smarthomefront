@@ -10,16 +10,12 @@ async function login(){
   }
 
   try{
-    const API_BASE = window.API || "https://smarthome-github-io-7.onrender.com";
-    const res = await fetch(API_BASE + "/login", {
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json"
-      },
+    const res = await fetch(API + "/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password })
     });
 
-    // 🔥 check HTTP status trước
     if(!res.ok){
       alert("Server lỗi hoặc không phản hồi!");
       return;
@@ -28,30 +24,13 @@ async function login(){
     const data = await res.json();
     console.log("LOGIN RESPONSE:", data);
 
-    // 🔥 CHECK CHUẨN
     if(data?.success && data?.token){
-
-      // 🔥 đảm bảo token là string
-      const token = String(data.token);
-
-      localStorage.setItem("token", token);
+      localStorage.setItem("token", String(data.token));
       localStorage.setItem("user", data.user || "");
       localStorage.setItem("role", data.role || "");
 
-      console.log("TOKEN SAVED:", token);
-
-      // 🔥 verify lại sau khi lưu
-      const saved = localStorage.getItem("token");
-      if(!saved){
-        alert("Lỗi lưu token!");
-        return;
-      }
-
       alert("Login thành công!");
-
-      // redirect ngay (không cần delay nữa)
       window.location.href = "dashboard.html";
-
     }else{
       alert("Sai tài khoản hoặc mật khẩu");
     }

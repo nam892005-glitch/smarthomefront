@@ -1,35 +1,16 @@
 <script src="config.js"></script>
-
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
 const token = localStorage.getItem("token");
+const role = localStorage.getItem("role");
 
-// ===== CHECK TOKEN =====
-if(!token || token === "undefined" || token === "null"){
-  alert("Chưa đăng nhập!");
-  window.location.href = "index.html";
-  return;
-}
-
-// ===== SET INFO =====
-const user = localStorage.getItem("user") || "--";
-const role = localStorage.getItem("role") || "--";
-
-const userEl = document.getElementById("user");
-const roleEl = document.getElementById("role");
-
-if(userEl) userEl.innerText = user;
-if(roleEl) roleEl.innerText = role;
-
-// ===== CHECK ADMIN =====
-if(role !== "admin"){
+if(!token || role !== "admin"){
   alert("Bạn không có quyền truy cập!");
   window.location.href = "dashboard.html";
   return;
 }
 
-// ===== HELPER FETCH =====
 async function apiFetch(url, options = {}){
   try{
     const res = await fetch(API + url, {
@@ -39,15 +20,12 @@ async function apiFetch(url, options = {}){
         "Authorization": "Bearer " + token
       }
     });
-
     if(res.status === 401 || res.status === 403){
       alert("Phiên đăng nhập không hợp lệ!");
       logout();
       return null;
     }
-
     return res;
-
   }catch(e){
     console.error("FETCH ERROR:", e);
     alert("Không kết nối được server!");
@@ -55,46 +33,32 @@ async function apiFetch(url, options = {}){
   }
 }
 
-// ===== LOAD USERS =====
 async function load(){
   const res = await apiFetch("/users");
   if(!res) return;
-
   const data = await res.json();
   const userList = document.getElementById("userList");
-
   if(!userList) return;
-
   userList.innerHTML = "";
 
   if(!data.users || data.users.length === 0){
-    userList.innerHTML = `
-      <tr>
-        <td colspan="3" style="text-align:center;">Không có user</td>
-      </tr>
-    `;
+    userList.innerHTML = `<tr><td colspan="3" style="text-align:center;">Không có user</td></tr>`;
     return;
   }
 
   data.users.forEach(u=>{
     const row = document.createElement("tr");
-
     row.innerHTML = `
       <td>${u.username || "--"}</td>
       <td>${u.role || "--"}</td>
       <td>
-        ${u.username !== "admin" ? 
-          `<button class="btn btn-ghost" onclick="delUser('${u.username}')">Xóa</button>` 
-          : `<span style="color:gray;">Protected</span>`
-        }
+        ${u.username !== "admin" ? `<button onclick="delUser('${u.username}')">Xóa</button>` : "<span style='color:gray'>Protected</span>"}
       </td>
     `;
-
     userList.appendChild(row);
   });
 }
 
-// ===== ADD USER =====
 window.add = async function(){
   const username = document.getElementById("u").value.trim();
   const password = document.getElementById("p").value.trim();
@@ -112,36 +76,24 @@ window.add = async function(){
   });
 
   if(!res) return;
-
   alert("Thêm user thành công!");
-
   document.getElementById("u").value = "";
   document.getElementById("p").value = "";
-
   load();
 }
 
-// ===== DELETE USER =====
 window.delUser = async function(name){
   if(!confirm("Xóa user " + name + "?")) return;
-
-  const res = await apiFetch("/delete/" + name, {
-    method:"DELETE"
-  });
-
+  const res = await apiFetch("/delete/" + name, { method:"DELETE" });
   if(!res) return;
-
   load();
 }
 
-// ===== LOGOUT =====
-function logout(){
+window.logout = function(){
   localStorage.clear();
   window.location.href = "index.html";
 }
 
-// ===== INIT =====
 load();
-
 });
 </script>

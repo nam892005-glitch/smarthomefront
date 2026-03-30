@@ -1,26 +1,25 @@
 <script src="config.js"></script>
-
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
 const token = localStorage.getItem("token");
-
-// ===== CHECK TOKEN =====
 if(!token || token === "undefined" || token === "null"){
   alert("Chưa đăng nhập!");
   window.location.href = "index.html";
   return;
 }
 
-// ===== SET USER INFO =====
+// ===== SET INFO =====
 const userEl = document.getElementById("user");
 const roleEl = document.getElementById("role");
+const user = localStorage.getItem("user") || "--";
+const role = localStorage.getItem("role") || "--";
 
-if(userEl) userEl.innerText = localStorage.getItem("user") || "--";
-if(roleEl) roleEl.innerText = localStorage.getItem("role") || "--";
+if(userEl) userEl.innerText = user;
+if(roleEl) roleEl.innerText = role;
 
 // hide user menu nếu không phải admin
-if(roleEl && roleEl.innerText !== "admin"){
+if(role !== "admin"){
   const link = document.getElementById("uLink");
   if(link) link.style.display = "none";
 }
@@ -35,15 +34,12 @@ async function apiFetch(url, options = {}){
         "Authorization": "Bearer " + token
       }
     });
-
-    if(res.status === 401){
-      alert("Phiên đăng nhập hết hạn!");
+    if(res.status === 401 || res.status === 403){
+      alert("Phiên đăng nhập không hợp lệ!");
       logout();
       return null;
     }
-
     return res;
-
   }catch(e){
     console.error("FETCH ERROR:", e);
     alert("Không kết nối được server!");
@@ -51,44 +47,36 @@ async function apiFetch(url, options = {}){
   }
 }
 
-// ===== API =====
+// ===== DOOR =====
 window.door = async function(){
   const res = await apiFetch("/door", { method:"POST" });
   if(res) console.log("Door OK");
 }
 
+// ===== LIGHT =====
 window.light = async function(state){
   const res = await apiFetch("/light", {
     method:"POST",
     headers:{ "Content-Type":"application/json" },
     body: JSON.stringify({state})
   });
-
   if(res) console.log("Light:", state);
 }
 
 // ===== STATUS =====
 async function loadStatus(){
-  try{
-    let r = await fetch(API + "/status");
-    if(!r.ok) return;
-
-    let d = await r.json();
-    const stateEl = document.getElementById("state");
-    if(stateEl){
-      stateEl.innerText = "Trạng thái: " + (d.result || "--");
-    }
-
-  }catch(e){
-    console.error("STATUS ERROR:", e);
-  }
+  const res = await fetch(API + "/status");
+  if(!res.ok) return;
+  const d = await res.json();
+  const stateEl = document.getElementById("state");
+  if(stateEl) stateEl.innerText = "Trạng thái: " + (d.result || "--");
 }
 
 setInterval(loadStatus, 1000);
 loadStatus();
 
 // ===== LOGOUT =====
-function logout(){
+window.logout = function(){
   localStorage.clear();
   window.location.href = "index.html";
 }
