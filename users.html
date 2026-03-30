@@ -1,17 +1,72 @@
+<!doctype html>
+<html>
+<head>
+<link rel="stylesheet" href="style.css">
+<script src="config.js"></script>
+</head>
+
+<body>
+<div class="container">
+
+<h2>👤 Users</h2>
+
+<input id="u" placeholder="username">
+<input id="p" placeholder="password">
+<select id="r">
+  <option value="user">user</option>
+  <option value="admin">admin</option>
+</select>
+
+<button class="btn btn-primary" onclick="add()">Add</button>
+
+<ul id="list"></ul>
+
+</div>
+
+<script>
+const token = localStorage.getItem("token");
+
 async function load(){
-  let r = await fetch(API+"/users", { headers:{Authorization:token} });
+  let r = await fetch(API+"/users",{
+    headers:{Authorization:token}
+  });
+
   let d = await r.json();
 
-  list.innerHTML = d.users.map(u => `
-    <li>
-      <div>
-        <strong>${u.username}</strong> 
-        <small style="color: #999;">(${u.role})</small>
-      </div>
-      <button class="btn-danger" onclick="del('${u.username}')" 
-              style="padding: 5px 10px; border-radius: 5px;">
-        <i class="fas fa-trash"></i>
-      </button>
-    </li>
-  `).join('');
+  list.innerHTML="";
+  d.users.forEach(u=>{
+    list.innerHTML += `
+      <li>${u.username} (${u.role})
+      <button onclick="del('${u.username}')">x</button></li>
+    `;
+  });
 }
+
+async function add(){
+  await fetch(API+"/add_user",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      Authorization:token
+    },
+    body: JSON.stringify({
+      username:u.value,
+      password:p.value,
+      role:r.value
+    })
+  });
+  load();
+}
+
+async function del(name){
+  await fetch(API+"/delete/"+name,{
+    method:"DELETE",
+    headers:{Authorization:token}
+  });
+  load();
+}
+
+load();
+</script>
+</body>
+</html>

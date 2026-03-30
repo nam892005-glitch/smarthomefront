@@ -1,78 +1,70 @@
 :root {
-    --primary: #2a5298;
-    --success: #2ecc71;
-    --danger: #e74c3c;
-    --bg: #f4f7f6;
-    --card-bg: #ffffff;
+  --primary: #ec4899;
+  --primary-700: #db2777;
+  --bg: #fff1f7;
+  --card: #ffffff;
+  --text: #111827;
+  --border: #f9a8d4;
+  --radius: 14px;
 }
 
 body {
-    background-color: var(--bg);
-    margin: 0;
-    font-family: 'Inter', sans-serif;
+  font-family: Arial;
+  background: var(--bg);
+  margin: 0;
 }
 
-.container {
-    max-width: 1000px;
-    margin: 20px auto;
-    padding: 20px;
-}
+.container { padding: 20px; }
 
-/* Dashboard Grid */
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
+.topbar {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
 
 .card {
-    background: var(--card-bg);
-    padding: 25px;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  background: var(--card);
+  padding:20px;
+  border-radius:var(--radius);
+  margin-top:20px;
+  border:1px solid var(--border);
 }
 
-/* Badge & Topbar */
-.topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--primary);
-    color: white;
-    padding: 15px 30px;
-    border-radius: 15px;
+.grid {
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:20px;
+}
+
+.btn {
+  padding:10px 15px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.btn-primary { background: var(--primary); color:white; }
+.btn-soft { background:#f472b6; color:white; }
+.btn-ghost { background:#fb7185; color:white; }
+
+input, select {
+  width:100%;
+  padding:10px;
+  margin:5px 0;
+  border-radius:8px;
+  border:1px solid var(--border);
 }
 
 .badge {
-    background: rgba(255,255,255,0.2);
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    margin-left: 5px;
+  background:#fbcfe8;
+  padding:5px 10px;
+  border-radius:6px;
 }
 
-/* List Style cho Logs & Users */
-ul { list-style: none; padding: 0; }
-li {
-    background: #fff;
-    margin-bottom: 10px;
-    padding: 15px;
-    border-radius: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+.nav a {
+  display:block;
+  margin:8px 0;
+  color:#db2777;
+  text-decoration:none;
 }
-
-/* Button tinh chỉnh */
-.btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: 0.2s;
-}
-.btn-primary { background: var(--primary); color: white; }
-.btn-danger { background: var(--danger); color: white; }
