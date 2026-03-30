@@ -1,43 +1,79 @@
 <!doctype html>
-<html>
+<html lang="vi">
 <head>
-<link rel="stylesheet" href="style.css">
-<script src="config.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartHome Login</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="config.js"></script>
 </head>
 
 <body>
 <div class="container">
-  <div class="card">
-    <h2>🔐 Login</h2>
+    <div class="login-card">
+        <div class="header">
+            <div class="icon-box">
+                <i class="fas fa-house-signal"></i>
+            </div>
+            <h2>Smart Home</h2>
+            <p>Chào mừng bạn quay trở lại!</p>
+        </div>
 
-    <input id="u" placeholder="Username">
-    <input id="p" type="password" placeholder="Password">
+        <div class="input-group">
+            <i class="fas fa-user"></i>
+            <input id="u" type="text" placeholder="Tên đăng nhập">
+        </div>
 
-    <button class="btn btn-primary" onclick="login()">Login</button>
-  </div>
+        <div class="input-group">
+            <i class="fas fa-lock"></i>
+            <input id="p" type="password" placeholder="Mật khẩu">
+        </div>
+
+        <button class="btn-login" onclick="login()">
+            <span>Đăng nhập</span>
+            <i class="fas fa-arrow-right"></i>
+        </button>
+        
+        <div id="msg" class="error-msg"></div>
+    </div>
 </div>
 
 <script>
 async function login(){
-  let res = await fetch(API + "/login", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({
-      username: u.value,
-      password: p.value
-    })
-  });
+    const btn = document.querySelector('.btn-login');
+    const msg = document.getElementById('msg');
+    
+    // Hiệu ứng loading nhẹ
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+    btn.style.opacity = "0.7";
 
-  let data = await res.json();
+    try {
+        let res = await fetch(API + "/login", {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body: JSON.stringify({
+                username: u.value,
+                password: p.value
+            })
+        });
 
-  if(data.success){
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", data.user);
-    localStorage.setItem("role", data.role);
-    location.href="dashboard.html";
-  }else{
-    alert("Sai tài khoản");
-  }
+        let data = await res.json();
+
+        if(data.success){
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("user", data.user);
+            localStorage.setItem("role", data.role);
+            location.href="dashboard.html";
+        } else {
+            msg.innerText = "Sai tài khoản hoặc mật khẩu!";
+            btn.innerHTML = '<span>Đăng nhập</span> <i class="fas fa-arrow-right"></i>';
+            btn.style.opacity = "1";
+        }
+    } catch (err) {
+        msg.innerText = "Lỗi kết nối server!";
+        btn.innerHTML = '<span>Đăng nhập</span>';
+    }
 }
 </script>
 </body>
