@@ -1,87 +1,28 @@
-<!doctype html>
-<html>
-<head>
-<link rel="stylesheet" href="style.css">
-<script src="config.js"></script>
-</head>
-
-<body>
-<div class="container">
-
 <div class="topbar">
-  <h2>🏠 SmartHome</h2>
+  <h2><i class="fas fa-home"></i> SmartHome</h2>
   <div>
-    <span class="badge" id="user"></span>
-    <span class="badge" id="role"></span>
+    <span class="badge"><i class="fas fa-user"></i> <span id="user"></span></span>
+    <span class="badge" id="role" style="text-transform: uppercase;"></span>
   </div>
 </div>
 
 <div class="grid">
+  <div class="card">
+    <h3><i class="fas fa-sliders-h"></i> Điều khiển</h3>
+    <div style="display: flex; gap: 10px; margin-top: 15px;">
+      <button class="btn btn-primary" onclick="door()"><i class="fas fa-door-open"></i> Cửa</button>
+      <button class="btn btn-success" onclick="light('ON')"><i class="fas fa-lightbulb"></i> Bật</button>
+      <button class="btn btn-danger" onclick="light('OFF')"><i class="far fa-lightbulb"></i> Tắt</button>
+    </div>
+    <p style="margin-top: 15px; font-weight: bold;">Trạng thái: <span id="state" style="color: var(--primary);">--</span></p>
+  </div>
 
-<div class="card">
-  <h3>Điều khiển</h3>
-
-  <button class="btn btn-primary" onclick="door()">🚪 Door</button>
-  <button class="btn btn-soft" onclick="light('ON')">💡 ON</button>
-  <button class="btn btn-ghost" onclick="light('OFF')">💡 OFF</button>
-
-  <p id="state"></p>
-</div>
-
-<div class="card">
-  <h3>Menu</h3>
-  <div class="nav">
-    <a href="logs.html">📜 Logs</a>
-    <a href="users.html" id="uLink">👤 Users</a>
-    <a href="#" onclick="logout()">🚪 Logout</a>
+  <div class="card">
+    <h3><i class="fas fa-bars"></i> Menu</h3>
+    <div class="nav" style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
+      <a href="logs.html" class="btn" style="background:#eee; text-decoration:none; color:#333;"><i class="fas fa-history"></i> Lịch sử hoạt động</a>
+      <a href="users.html" id="uLink" class="btn" style="background:#eee; text-decoration:none; color:#333;"><i class="fas fa-users-cog"></i> Quản lý thành viên</a>
+      <a href="#" onclick="logout()" class="btn" style="color: var(--danger);"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+    </div>
   </div>
 </div>
-
-</div>
-</div>
-
-<script>
-const token = localStorage.getItem("token");
-if(!token) location.href="index.html";
-
-user.innerText = localStorage.getItem("user");
-role.innerText = localStorage.getItem("role");
-
-if(role.innerText !== "admin"){
-  document.getElementById("uLink").style.display="none";
-}
-
-async function door(){
-  await fetch(API+"/door",{
-    method:"POST",
-    headers:{Authorization:token}
-  });
-}
-
-async function light(s){
-  await fetch(API+"/light",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      Authorization:token
-    },
-    body: JSON.stringify({state:s})
-  });
-}
-
-async function load(){
-  let r = await fetch(API+"/status");
-  let d = await r.json();
-  state.innerText = d.result;
-}
-
-setInterval(load,1000);
-load();
-
-function logout(){
-  localStorage.clear();
-  location.href="index.html";
-}
-</script>
-</body>
-</html>

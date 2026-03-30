@@ -1,37 +1,13 @@
-<!doctype html>
-<html>
-<head>
-<link rel="stylesheet" href="style.css">
-<script src="config.js"></script>
-</head>
-
-<body>
-<div class="container">
-
-<h2>📜 Logs</h2>
-<ul id="list"></ul>
-
-</div>
-
-<script>
-const token = localStorage.getItem("token");
-
 async function load(){
-  let r = await fetch(API+"/logs",{
-    headers:{Authorization:token}
-  });
-
+  let r = await fetch(API+"/logs", { headers:{Authorization:token} });
   let d = await r.json();
 
-  list.innerHTML="";
-  d.logs.forEach(log=>{
-    list.innerHTML += `
-      <li>${log.time} - ${log.user} - ${log.action}</li>
-    `;
-  });
+  // Dùng .map() để tạo danh sách - Rất dễ dạy cho học sinh
+  list.innerHTML = d.logs.reverse().map(log => `
+    <li>
+      <span style="color:#666; font-size: 0.9rem;">${log.time}</span>
+      <strong>${log.user}</strong>
+      <span class="badge" style="background: #e1f5fe; color: #01579b;">${log.action}</span>
+    </li>
+  `).join('');
 }
-
-load();
-</script>
-</body>
-</html>
