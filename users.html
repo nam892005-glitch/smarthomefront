@@ -1,72 +1,26 @@
 <!doctype html>
 <html>
 <head>
-<link rel="stylesheet" href="style.css">
-<script src="config.js"></script>
+  <title>Users</title>
 </head>
-
 <body>
-<div class="container">
 
-<h2>👤 Users</h2>
-
-<input id="u" placeholder="username">
-<input id="p" placeholder="password">
-<select id="r">
-  <option value="user">user</option>
-  <option value="admin">admin</option>
-</select>
-
-<button class="btn btn-primary" onclick="add()">Add</button>
-
+<h2>Users</h2>
 <ul id="list"></ul>
 
-</div>
-
 <script>
-const token = localStorage.getItem("token");
+const API = "https://smarthome-github-io-7.onrender.com";
 
-async function load(){
-  let r = await fetch(API+"/users",{
-    headers:{Authorization:token}
+fetch(API + "/users")
+.then(r=>r.json())
+.then(data=>{
+  let html="";
+  data.forEach(u=>{
+    html += "<li>"+u.username+" ("+u.role+")</li>";
   });
-
-  let d = await r.json();
-
-  list.innerHTML="";
-  d.users.forEach(u=>{
-    list.innerHTML += `
-      <li>${u.username} (${u.role})
-      <button onclick="del('${u.username}')">x</button></li>
-    `;
-  });
-}
-
-async function add(){
-  await fetch(API+"/add_user",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      Authorization:token
-    },
-    body: JSON.stringify({
-      username:u.value,
-      password:p.value,
-      role:r.value
-    })
-  });
-  load();
-}
-
-async function del(name){
-  await fetch(API+"/delete/"+name,{
-    method:"DELETE",
-    headers:{Authorization:token}
-  });
-  load();
-}
-
-load();
+  document.getElementById("list").innerHTML = html;
+});
 </script>
+
 </body>
 </html>

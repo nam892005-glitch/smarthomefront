@@ -1,43 +1,47 @@
 <!doctype html>
-<html>
+<html lang="vi">
 <head>
-<link rel="stylesheet" href="style.css">
-<script src="config.js"></script>
+  <meta charset="utf-8">
+  <title>Login</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 <div class="container">
-  <div class="card">
-    <h2>🔐 Login</h2>
+  <h2>Login</h2>
 
-    <input id="u" placeholder="Username">
-    <input id="p" type="password" placeholder="Password">
-
-    <button class="btn btn-primary" onclick="login()">Login</button>
-  </div>
+  <form onsubmit="login(event)">
+    <input id="user" placeholder="Username" required>
+    <input id="pass" type="password" placeholder="Password" required>
+    <button class="btn btn-primary">Login</button>
+  </form>
 </div>
 
 <script>
-async function login(){
-  let res = await fetch(API + "/login", {
+const API = "https://smarthome-github-io-7.onrender.com";
+
+function login(e){
+  e.preventDefault();
+
+  fetch(API + "/login", {
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body: JSON.stringify({
-      username: u.value,
-      password: p.value
+      username: user.value,
+      password: pass.value
     })
-  });
+  })
+  .then(res=>res.json())
+  .then(data=>{
+    if(data.success){
+      localStorage.setItem("user", data.user);
+      localStorage.setItem("role", data.role || "user");
 
-  let data = await res.json();
-
-  if(data.success){
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", data.user);
-    localStorage.setItem("role", data.role);
-    location.href="dashboard.html";
-  }else{
-    alert("Sai tài khoản");
-  }
+      window.location.href = "dashboard.html";
+    }else{
+      alert("Sai tài khoản!");
+    }
+  })
 }
 </script>
 </body>
