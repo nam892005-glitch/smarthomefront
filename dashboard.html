@@ -1,21 +1,26 @@
+<script src="config.js"></script>
+
 <script>
+document.addEventListener("DOMContentLoaded", () => {
+
 const token = localStorage.getItem("token");
 
 // ===== CHECK TOKEN =====
 if(!token || token === "undefined" || token === "null"){
   alert("Chưa đăng nhập!");
   window.location.href = "index.html";
+  return;
 }
 
 // ===== SET USER INFO =====
 const userEl = document.getElementById("user");
 const roleEl = document.getElementById("role");
 
-userEl.innerText = localStorage.getItem("user") || "--";
-roleEl.innerText = localStorage.getItem("role") || "--";
+if(userEl) userEl.innerText = localStorage.getItem("user") || "--";
+if(roleEl) roleEl.innerText = localStorage.getItem("role") || "--";
 
 // hide user menu nếu không phải admin
-if(roleEl.innerText !== "admin"){
+if(roleEl && roleEl.innerText !== "admin"){
   const link = document.getElementById("uLink");
   if(link) link.style.display = "none";
 }
@@ -31,7 +36,6 @@ async function apiFetch(url, options = {}){
       }
     });
 
-    // 🔥 xử lý token hết hạn
     if(res.status === 401){
       alert("Phiên đăng nhập hết hạn!");
       logout();
@@ -47,18 +51,16 @@ async function apiFetch(url, options = {}){
   }
 }
 
-// ===== API CALL =====
-async function door(){
+// ===== API =====
+window.door = async function(){
   const res = await apiFetch("/door", { method:"POST" });
   if(res) console.log("Door OK");
 }
 
-async function light(state){
+window.light = async function(state){
   const res = await apiFetch("/light", {
     method:"POST",
-    headers:{
-      "Content-Type":"application/json"
-    },
+    headers:{ "Content-Type":"application/json" },
     body: JSON.stringify({state})
   });
 
@@ -72,7 +74,10 @@ async function loadStatus(){
     if(!r.ok) return;
 
     let d = await r.json();
-    document.getElementById("state").innerText = "Trạng thái: " + (d.result || "--");
+    const stateEl = document.getElementById("state");
+    if(stateEl){
+      stateEl.innerText = "Trạng thái: " + (d.result || "--");
+    }
 
   }catch(e){
     console.error("STATUS ERROR:", e);
@@ -87,4 +92,6 @@ function logout(){
   localStorage.clear();
   window.location.href = "index.html";
 }
+
+});
 </script>

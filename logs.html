@@ -1,18 +1,26 @@
+<script src="config.js"></script>
+
 <script>
+document.addEventListener("DOMContentLoaded", () => {
+
 const token = localStorage.getItem("token");
 
 // ===== CHECK TOKEN =====
 if(!token || token === "undefined" || token === "null"){
   alert("Chưa đăng nhập!");
   window.location.href = "index.html";
+  return;
 }
 
 // ===== SET USER INFO =====
 const user = localStorage.getItem("user") || "--";
 const role = localStorage.getItem("role") || "--";
 
-document.getElementById("user").innerText = user;
-document.getElementById("role").innerText = role;
+const userEl = document.getElementById("user");
+const roleEl = document.getElementById("role");
+
+if(userEl) userEl.innerText = user;
+if(roleEl) roleEl.innerText = role;
 
 // hide user menu nếu không phải admin
 const uLink = document.getElementById("uLink");
@@ -51,10 +59,10 @@ async function load(){
   const data = await res.json();
   const logList = document.getElementById("logList");
 
-  // 🔥 clear trước
+  if(!logList) return;
+
   logList.innerHTML = "";
 
-  // 🔥 nếu không có logs
   if(!data.logs || data.logs.length === 0){
     logList.innerHTML = `
       <tr>
@@ -64,7 +72,6 @@ async function load(){
     return;
   }
 
-  // 🔥 render logs
   data.logs.forEach(log=>{
     const row = document.createElement("tr");
 
@@ -87,4 +94,6 @@ function logout(){
 // ===== AUTO LOAD =====
 load();
 setInterval(load, 5000);
+
+});
 </script>

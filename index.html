@@ -1,3 +1,4 @@
+<script src="config.js"></script>
 <script>
 async function login(){
   const username = document.getElementById("u").value.trim();
@@ -9,7 +10,8 @@ async function login(){
   }
 
   try{
-    const res = await fetch(API + "/login", {
+    const API_BASE = window.API || "https://smarthome-github-io-7.onrender.com";
+    const res = await fetch(API_BASE + "/login", {
       method:"POST",
       headers:{
         "Content-Type":"application/json"
