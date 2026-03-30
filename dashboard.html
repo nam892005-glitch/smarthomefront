@@ -1,77 +1,87 @@
+<!doctype html>
+<html>
+<head>
+<link rel="stylesheet" href="style.css">
+<script src="config.js"></script>
+</head>
+
+<body>
+<div class="container">
+
+<div class="topbar">
+  <h2>🏠 SmartHome</h2>
+  <div>
+    <span class="badge" id="user"></span>
+    <span class="badge" id="role"></span>
+  </div>
+</div>
+
+<div class="grid">
+
+<div class="card">
+  <h3>Điều khiển</h3>
+
+  <button class="btn btn-primary" onclick="door()">🚪 Door</button>
+  <button class="btn btn-soft" onclick="light('ON')">💡 ON</button>
+  <button class="btn btn-ghost" onclick="light('OFF')">💡 OFF</button>
+
+  <p id="state"></p>
+</div>
+
+<div class="card">
+  <h3>Menu</h3>
+  <div class="nav">
+    <a href="logs.html">📜 Logs</a>
+    <a href="users.html" id="uLink">👤 Users</a>
+    <a href="#" onclick="logout()">🚪 Logout</a>
+  </div>
+</div>
+
+</div>
+</div>
+
 <script>
-const API = "https://smarthome-github-io-7.onrender.com";
+const token = localStorage.getItem("token");
+if(!token) location.href="index.html";
 
-// ===== LOAD USER =====
-const user = localStorage.getItem("user");
-const role = localStorage.getItem("role");
+user.innerText = localStorage.getItem("user");
+role.innerText = localStorage.getItem("role");
 
-// 🔒 CHẶN CHƯA LOGIN
-if(!user){
-  alert("Bạn chưa đăng nhập!");
-  window.location.href = "index.html";
+if(role.innerText !== "admin"){
+  document.getElementById("uLink").style.display="none";
 }
 
-// hiển thị
-document.getElementById("user").innerText = user;
-document.getElementById("role").innerText = role || "user";
-
-// Ẩn admin nếu không phải admin
-if(role !== "admin"){
-  document.getElementById("userLink").style.display = "none";
-}
-
-// ===== CONTROL =====
 async function door(){
-
-  if(!user){
-    alert("Vui lòng đăng nhập!");
-    return;
-  }
-
-  await fetch(API + "/door", {
+  await fetch(API+"/door",{
     method:"POST",
-    headers:{
-      "Content-Type":"application/json"
-    },
-    body: JSON.stringify({
-      user: user
-    })
-  })
+    headers:{Authorization:token}
+  });
 }
 
 async function light(s){
-
-  if(!user){
-    alert("Vui lòng đăng nhập!");
-    return;
-  }
-
-  await fetch(API + "/light", {
+  await fetch(API+"/light",{
     method:"POST",
     headers:{
-      "Content-Type":"application/json"
+      "Content-Type":"application/json",
+      Authorization:token
     },
-    body: JSON.stringify({
-      user: user,
-      state: s
-    })
-  })
+    body: JSON.stringify({state:s})
+  });
 }
 
-// ===== STATUS =====
-async function update(){
-  let r = await fetch(API + "/status");
+async function load(){
+  let r = await fetch(API+"/status");
   let d = await r.json();
-  document.getElementById("state").innerText =
-    "Device: " + (d.result || "--");
+  state.innerText = d.result;
 }
 
-setInterval(update, 1000);
-update();
+setInterval(load,1000);
+load();
 
-// ===== LOGOUT =====
 function logout(){
   localStorage.clear();
-  window.location.href = "index.html";
+  location.href="index.html";
 }
 </script>
+</body>
+</html>
