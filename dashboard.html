@@ -1,128 +1,77 @@
-<!doctype html>
-<html lang="vi">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>SmartHome • Dashboard</title>
+<script>
+const API = "https://smarthome-github-io-7.onrender.com";
 
-  <!-- ⚠️ đổi sang css local -->
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
+// ===== LOAD USER =====
+const user = localStorage.getItem("user");
+const role = localStorage.getItem("role");
 
-  <div class="container">
+// 🔒 CHẶN CHƯA LOGIN
+if(!user){
+  alert("Bạn chưa đăng nhập!");
+  window.location.href = "index.html";
+}
 
-    <div class="topbar">
-      <div class="brand">
-        <span class="dot"></span>
-        <span>SmartHome Admin</span>
-      </div>
+// hiển thị
+document.getElementById("user").innerText = user;
+document.getElementById("role").innerText = role || "user";
 
-      <div class="userchip">
-        <span class="badge">Xin chào <b id="user"></b></span>
-        <span class="badge">Vai trò: <b id="role"></b></span>
-      </div>
-    </div>
+// Ẩn admin nếu không phải admin
+if(role !== "admin"){
+  document.getElementById("userLink").style.display = "none";
+}
 
-    <div class="grid">
+// ===== CONTROL =====
+async function door(){
 
-      <!-- LEFT -->
-      <div class="card">
-        <h3>Điều khiển nhanh</h3>
-        <p>Bấm để gửi lệnh điều khiển. Trạng thái sẽ tự cập nhật mỗi giây.</p>
+  if(!user){
+    alert("Vui lòng đăng nhập!");
+    return;
+  }
 
-        <div style="height:14px"></div>
-
-        <div class="actions">
-          <button class="btn btn-primary" onclick="door()">🚪 Open Door</button>
-          <button class="btn btn-soft" onclick="light('ON')">💡 Light ON</button>
-          <button class="btn btn-ghost" onclick="light('OFF')">💡 Light OFF</button>
-        </div>
-
-        <div style="height:16px"></div>
-
-        <div class="state">
-          <div>
-            <div class="label">Device status</div>
-            <div class="value" id="state">--</div>
-          </div>
-          <div class="badge">Auto refresh: 1s</div>
-        </div>
-
-      </div>
-
-      <!-- RIGHT -->
-      <div class="card">
-        <h3>Điều hướng</h3>
-        <p>Chuyển nhanh tới các trang quản trị.</p>
-
-        <div class="nav">
-          <a href="users.html" id="userLink">👤 Manage Users</a>
-          <a href="logs.html">📜 Logs</a>
-          <a href="#" onclick="logout()">🚪 Logout</a>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <script>
-    const API = "https://smarthome-github-io-7.onrender.com";
-
-    // ===== LOAD USER =====
-    const user = localStorage.getItem("user") || "Guest";
-    const role = localStorage.getItem("role") || "user";
-
-    document.getElementById("user").innerText = user;
-    document.getElementById("role").innerText = role;
-
-    // Ẩn admin nếu không phải admin
-    if(role !== "admin"){
-      document.getElementById("userLink").style.display = "none";
-    }
-
-    // ===== CONTROL =====
-  async function door(){
-    await fetch(API + "/door", {
-      method:"POST",
-      headers:{
+  await fetch(API + "/door", {
+    method:"POST",
+    headers:{
       "Content-Type":"application/json"
     },
     body: JSON.stringify({
-      user: user   // ✅ QUAN TRỌNG
+      user: user
     })
   })
 }
 
-  async function light(s){
-    await fetch(API + "/light", {
-      method:"POST",
-      headers:{
+async function light(s){
+
+  if(!user){
+    alert("Vui lòng đăng nhập!");
+    return;
+  }
+
+  await fetch(API + "/light", {
+    method:"POST",
+    headers:{
       "Content-Type":"application/json"
     },
     body: JSON.stringify({
-      user: user,  // ✅ QUAN TRỌNG
+      user: user,
       state: s
     })
   })
 }
 
-    // ===== STATUS =====
-    async function update(){
-      let r = await fetch(API + "/status");
-      let d = await r.json();
-      document.getElementById("state").innerText = "Device: " + d.result;
-    }
+// ===== STATUS =====
+async function update(){
+  let r = await fetch(API + "/status");
+  let d = await r.json();
+  document.getElementById("state").innerText =
+    "Device: " + (d.result || "--");
+}
 
-    setInterval(update, 1000);
-    update();
+setInterval(update, 1000);
+update();
 
-    // ===== LOGOUT =====
-    function logout(){
-      localStorage.clear();
-      window.location.href = "index.html";
-    }
-  </script>
-
-</body>
-</html>
+// ===== LOGOUT =====
+function logout(){
+  localStorage.clear();
+  window.location.href = "index.html";
+}
+</script>
