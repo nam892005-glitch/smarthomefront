@@ -1,25 +1,100 @@
 <!doctype html>
-<html>
+<html lang="vi">
 <head>
-  <title>Logs</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SmartHome • Logs</title>
+
+  <!-- sửa lại css -->
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    .log-list{
+      list-style:none;
+      padding:0;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .log-item{
+      display:flex;
+      justify-content:space-between;
+      padding:12px;
+      border-radius:10px;
+      background:#fff;
+      border:1px solid #ddd;
+    }
+    .pill{
+      background:#eee;
+      padding:5px 10px;
+      border-radius:20px;
+      font-size:12px;
+      font-weight:bold;
+    }
+    .meta{
+      font-size:12px;
+      color:#666;
+    }
+    .empty{
+      text-align:center;
+      padding:20px;
+      color:#888;
+    }
+  </style>
 </head>
+
 <body>
 
-<h2>Logs</h2>
-<ul id="logs"></ul>
+<div class="container">
+
+  <div class="topbar">
+    <h2>📜 Logs</h2>
+    <a href="dashboard.html">← Back</a>
+  </div>
+
+  <div class="card">
+    <ul id="logList" class="log-list"></ul>
+    <div id="empty" class="empty">Đang tải...</div>
+  </div>
+
+</div>
 
 <script>
-const API = "https://smarthome-github-io-7.onrender.com";
+const API = "https://smarthome-github-io-7.onrender.com"; // ⚠️ sửa
 
-fetch(API + "/logs")
-.then(r=>r.json())
-.then(data=>{
-  let html="";
-  data.forEach(l=>{
-    html += "<li>"+l.user+" - "+l.action+"</li>";
+async function loadLogs(){
+  let res = await fetch(API + "/logs");
+  let data = await res.json();
+
+  let list = document.getElementById("logList");
+  let empty = document.getElementById("empty");
+
+  list.innerHTML = "";
+
+  if(!data.logs || data.logs.length === 0){
+    empty.innerText = "Chưa có log nào";
+    return;
+  }
+
+  empty.style.display = "none";
+
+  data.logs.reverse().forEach(log => {
+    let li = document.createElement("li");
+    li.className = "log-item";
+
+    li.innerHTML = `
+      <div>
+        <span class="pill">🕒 ${log.time}</span>
+        <span class="meta">👤 ${log.user}</span>
+      </div>
+      <div><b>${log.action || log.topic || log.payload || "-"}</b></div>
+    `;
+
+    list.appendChild(li);
   });
-  document.getElementById("logs").innerHTML = html;
-});
+}
+
+loadLogs();
 </script>
 
 </body>
