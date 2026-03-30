@@ -3,12 +3,12 @@
   --primary-700: #c2185b;
   --primary-soft: #ffe4ec;
 
-  --bg: #0f172a;
-  --card: #1e293b;
+  --bg: #fff5f8;        /* nền trắng hồng */
+  --card: #ffffff;      /* card trắng */
 
-  --text: #ffffff;
-  --muted: #94a3b8;
-  --border: #334155;
+  --text: #1e293b;      /* chữ tối */
+  --muted: #64748b;
+  --border: #f1c6d4;
 
   --radius: 14px;
 }
@@ -38,6 +38,7 @@ body {
   padding: 20px;
   border-radius: var(--radius);
   margin-top: 20px;
+  box-shadow: 0 10px 25px rgba(233, 30, 99, 0.1);
 }
 
 /* GRID */
@@ -52,8 +53,14 @@ body {
   padding: 10px 15px;
   border: none;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 10px;
   font-weight: bold;
+  transition: 0.2s;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
 }
 
 .btn-primary {
@@ -62,42 +69,50 @@ body {
 }
 
 .btn-soft {
-  background: #10b981;
+  background: #ff85a2;
   color: white;
 }
 
 .btn-ghost {
-  background: #ef4444;
-  color: white;
+  background: #ffc1d6;
+  color: #c2185b;
 }
 
 /* NAV */
 .nav a {
   display: block;
   margin: 8px 0;
-  color: #60a5fa;
+  color: var(--primary);
   text-decoration: none;
+  font-weight: 600;
 }
 
 /* BADGE */
 .badge {
-  background: #334155;
+  background: var(--primary-soft);
+  color: var(--primary-700);
   padding: 5px 10px;
   border-radius: 6px;
 }
 
 /* VALUE TEXT */
 .value {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: bold;
+  color: var(--primary);
 }
 
 /* INPUT */
 input, select {
   width: 100%;
   padding: 10px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid var(--border);
+  outline: none;
+}
+
+input:focus {
+  border-color: var(--primary);
 }
 
 /* TABLE */
@@ -106,13 +121,18 @@ table {
   border-collapse: collapse;
 }
 
+th {
+  background: var(--primary-soft);
+}
+
 th, td {
   padding: 10px;
   border: 1px solid var(--border);
 }
 
-/* LOGIN riêng (fix màu sáng) */
+/* LOGIN */
 .login-card {
   background: white;
   color: black;
+  box-shadow: 0 20px 40px rgba(233,30,99,.2);
 }
