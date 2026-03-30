@@ -1,99 +1,37 @@
+<!doctype html>
+<html>
+<head>
+<link rel="stylesheet" href="style.css">
 <script src="config.js"></script>
+</head>
+
+<body>
+<div class="container">
+
+<h2>📜 Logs</h2>
+<ul id="list"></ul>
+
+</div>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-
 const token = localStorage.getItem("token");
 
-// ===== CHECK TOKEN =====
-if(!token || token === "undefined" || token === "null"){
-  alert("Chưa đăng nhập!");
-  window.location.href = "index.html";
-  return;
-}
-
-// ===== SET USER INFO =====
-const user = localStorage.getItem("user") || "--";
-const role = localStorage.getItem("role") || "--";
-
-const userEl = document.getElementById("user");
-const roleEl = document.getElementById("role");
-
-if(userEl) userEl.innerText = user;
-if(roleEl) roleEl.innerText = role;
-
-// hide user menu nếu không phải admin
-const uLink = document.getElementById("uLink");
-if(role !== "admin" && uLink){
-  uLink.style.display = "none";
-}
-
-// ===== HELPER FETCH =====
-async function apiFetch(url){
-  try{
-    const res = await fetch(API + url, {
-      headers:{
-        "Authorization": "Bearer " + token
-      }
-    });
-
-    if(res.status === 401){
-      alert("Phiên đăng nhập hết hạn!");
-      logout();
-      return null;
-    }
-
-    return res;
-
-  }catch(e){
-    console.error("FETCH ERROR:", e);
-    return null;
-  }
-}
-
-// ===== LOAD LOGS =====
 async function load(){
-  const res = await apiFetch("/logs");
-  if(!res) return;
+  let r = await fetch(API+"/logs",{
+    headers:{Authorization:token}
+  });
 
-  const data = await res.json();
-  const logList = document.getElementById("logList");
+  let d = await r.json();
 
-  if(!logList) return;
-
-  logList.innerHTML = "";
-
-  if(!data.logs || data.logs.length === 0){
-    logList.innerHTML = `
-      <tr>
-        <td colspan="3" style="text-align:center;">Không có dữ liệu</td>
-      </tr>
+  list.innerHTML="";
+  d.logs.forEach(log=>{
+    list.innerHTML += `
+      <li>${log.time} - ${log.user} - ${log.action}</li>
     `;
-    return;
-  }
-
-  data.logs.forEach(log=>{
-    const row = document.createElement("tr");
-
-    row.innerHTML = `
-      <td>${log.time || "--"}</td>
-      <td>${log.user || "--"}</td>
-      <td>${log.action || "--"}</td>
-    `;
-
-    logList.appendChild(row);
   });
 }
 
-// ===== LOGOUT =====
-function logout(){
-  localStorage.clear();
-  window.location.href = "index.html";
-}
-
-// ===== AUTO LOAD =====
 load();
-setInterval(load, 5000);
-
-});
 </script>
+</body>
+</html>

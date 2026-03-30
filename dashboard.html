@@ -1,85 +1,87 @@
+<!doctype html>
+<html>
+<head>
+<link rel="stylesheet" href="style.css">
 <script src="config.js"></script>
+</head>
+
+<body>
+<div class="container">
+
+<div class="topbar">
+  <h2>🏠 SmartHome</h2>
+  <div>
+    <span class="badge" id="user"></span>
+    <span class="badge" id="role"></span>
+  </div>
+</div>
+
+<div class="grid">
+
+<div class="card">
+  <h3>Điều khiển</h3>
+
+  <button class="btn btn-primary" onclick="door()">🚪 Door</button>
+  <button class="btn btn-soft" onclick="light('ON')">💡 ON</button>
+  <button class="btn btn-ghost" onclick="light('OFF')">💡 OFF</button>
+
+  <p id="state"></p>
+</div>
+
+<div class="card">
+  <h3>Menu</h3>
+  <div class="nav">
+    <a href="logs.html">📜 Logs</a>
+    <a href="users.html" id="uLink">👤 Users</a>
+    <a href="#" onclick="logout()">🚪 Logout</a>
+  </div>
+</div>
+
+</div>
+</div>
+
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-
 const token = localStorage.getItem("token");
-if(!token || token === "undefined" || token === "null"){
-  alert("Chưa đăng nhập!");
-  window.location.href = "index.html";
-  return;
+if(!token) location.href="index.html";
+
+user.innerText = localStorage.getItem("user");
+role.innerText = localStorage.getItem("role");
+
+if(role.innerText !== "admin"){
+  document.getElementById("uLink").style.display="none";
 }
 
-// ===== SET INFO =====
-const userEl = document.getElementById("user");
-const roleEl = document.getElementById("role");
-const user = localStorage.getItem("user") || "--";
-const role = localStorage.getItem("role") || "--";
-
-if(userEl) userEl.innerText = user;
-if(roleEl) roleEl.innerText = role;
-
-// hide user menu nếu không phải admin
-if(role !== "admin"){
-  const link = document.getElementById("uLink");
-  if(link) link.style.display = "none";
-}
-
-// ===== HELPER FETCH =====
-async function apiFetch(url, options = {}){
-  try{
-    const res = await fetch(API + url, {
-      ...options,
-      headers:{
-        ...(options.headers || {}),
-        "Authorization": "Bearer " + token
-      }
-    });
-    if(res.status === 401 || res.status === 403){
-      alert("Phiên đăng nhập không hợp lệ!");
-      logout();
-      return null;
-    }
-    return res;
-  }catch(e){
-    console.error("FETCH ERROR:", e);
-    alert("Không kết nối được server!");
-    return null;
-  }
-}
-
-// ===== DOOR =====
-window.door = async function(){
-  const res = await apiFetch("/door", { method:"POST" });
-  if(res) console.log("Door OK");
-}
-
-// ===== LIGHT =====
-window.light = async function(state){
-  const res = await apiFetch("/light", {
+async function door(){
+  await fetch(API+"/door",{
     method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({state})
+    headers:{Authorization:token}
   });
-  if(res) console.log("Light:", state);
 }
 
-// ===== STATUS =====
-async function loadStatus(){
-  const res = await fetch(API + "/status");
-  if(!res.ok) return;
-  const d = await res.json();
-  const stateEl = document.getElementById("state");
-  if(stateEl) stateEl.innerText = "Trạng thái: " + (d.result || "--");
+async function light(s){
+  await fetch(API+"/light",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      Authorization:token
+    },
+    body: JSON.stringify({state:s})
+  });
 }
 
-setInterval(loadStatus, 1000);
-loadStatus();
+async function load(){
+  let r = await fetch(API+"/status");
+  let d = await r.json();
+  state.innerText = d.result;
+}
 
-// ===== LOGOUT =====
-window.logout = function(){
+setInterval(load,1000);
+load();
+
+function logout(){
   localStorage.clear();
-  window.location.href = "index.html";
+  location.href="index.html";
 }
-
-});
 </script>
+</body>
+</html>
