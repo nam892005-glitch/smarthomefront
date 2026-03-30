@@ -1,82 +1,128 @@
 <!doctype html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8">
-  <title>Dashboard</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SmartHome • Dashboard</title>
+
+  <!-- ⚠️ đổi sang css local -->
   <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<div class="container">
+  <div class="container">
 
-<h2>Dashboard</h2>
+    <div class="topbar">
+      <div class="brand">
+        <span class="dot"></span>
+        <span>SmartHome Admin</span>
+      </div>
 
-<p>User: <b id="user"></b></p>
-<p>Role: <b id="role"></b></p>
+      <div class="userchip">
+        <span class="badge">Xin chào <b id="user"></b></span>
+        <span class="badge">Vai trò: <b id="role"></b></span>
+      </div>
+    </div>
 
-<button class="btn btn-primary" onclick="door()">Open Door</button>
-<button class="btn btn-soft" onclick="light('ON')">Light ON</button>
-<button class="btn btn-ghost" onclick="light('OFF')">Light OFF</button>
+    <div class="grid">
 
-<h3 id="state">--</h3>
+      <!-- LEFT -->
+      <div class="card">
+        <h3>Điều khiển nhanh</h3>
+        <p>Bấm để gửi lệnh điều khiển. Trạng thái sẽ tự cập nhật mỗi giây.</p>
 
-<a href="users.html">Users</a> |
-<a href="logs.html">Logs</a> |
-<a href="#" onclick="logout()">Logout</a>
+        <div style="height:14px"></div>
 
-</div>
+        <div class="actions">
+          <button class="btn btn-primary" onclick="door()">🚪 Open Door</button>
+          <button class="btn btn-soft" onclick="light('ON')">💡 Light ON</button>
+          <button class="btn btn-ghost" onclick="light('OFF')">💡 Light OFF</button>
+        </div>
 
-<script>
-const API = "https://smarthome-github-io-7.onrender.com";
+        <div style="height:16px"></div>
 
-// 🔥 CHẶN CHƯA LOGIN
-if(!localStorage.getItem("user")){
-  location.href = "index.html";
-}
+        <div class="state">
+          <div>
+            <div class="label">Device status</div>
+            <div class="value" id="state">--</div>
+          </div>
+          <div class="badge">Auto refresh: 1s</div>
+        </div>
 
-const user = localStorage.getItem("user");
-const role = localStorage.getItem("role");
+      </div>
 
-document.getElementById("user").innerText = user;
-document.getElementById("role").innerText = role;
+      <!-- RIGHT -->
+      <div class="card">
+        <h3>Điều hướng</h3>
+        <p>Chuyển nhanh tới các trang quản trị.</p>
 
-// ===== CONTROL =====
-async function door(){
-  await fetch(API + "/door", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({user:user})
-  })
-}
+        <div class="nav">
+          <a href="users.html" id="userLink">👤 Manage Users</a>
+          <a href="logs.html">📜 Logs</a>
+          <a href="#" onclick="logout()">🚪 Logout</a>
+        </div>
+      </div>
 
-async function light(s){
-  await fetch(API + "/light", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
+    </div>
+  </div>
+
+  <script>
+    const API = "https://smarthome-github-io-7.onrender.com";
+
+    // ===== LOAD USER =====
+    const user = localStorage.getItem("user") || "Guest";
+    const role = localStorage.getItem("role") || "user";
+
+    document.getElementById("user").innerText = user;
+    document.getElementById("role").innerText = role;
+
+    // Ẩn admin nếu không phải admin
+    if(role !== "admin"){
+      document.getElementById("userLink").style.display = "none";
+    }
+
+    // ===== CONTROL =====
+  async function door(){
+    await fetch(API + "/door", {
+      method:"POST",
+      headers:{
+      "Content-Type":"application/json"
+    },
     body: JSON.stringify({
-      user:user,
-      state:s
+      user: user   // ✅ QUAN TRỌNG
     })
   })
 }
 
-// ===== STATUS =====
-async function update(){
-  let r = await fetch(API + "/status");
-  let d = await r.json();
-  document.getElementById("state").innerText =
-    "Device: " + (d.result || "--");
+  async function light(s){
+    await fetch(API + "/light", {
+      method:"POST",
+      headers:{
+      "Content-Type":"application/json"
+    },
+    body: JSON.stringify({
+      user: user,  // ✅ QUAN TRỌNG
+      state: s
+    })
+  })
 }
 
-setInterval(update,1000);
-update();
+    // ===== STATUS =====
+    async function update(){
+      let r = await fetch(API + "/status");
+      let d = await r.json();
+      document.getElementById("state").innerText = "Device: " + d.result;
+    }
 
-function logout(){
-  localStorage.clear();
-  location.href="index.html";
-}
-</script>
+    setInterval(update, 1000);
+    update();
+
+    // ===== LOGOUT =====
+    function logout(){
+      localStorage.clear();
+      window.location.href = "index.html";
+    }
+  </script>
 
 </body>
 </html>
