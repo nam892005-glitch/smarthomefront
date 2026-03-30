@@ -1,60 +1,79 @@
-<!doctype html>
-<html>
-<head>
-<link rel="stylesheet" href="style.css">
-<script src="config.js"></script>
-<title>SmartHome Dashboard</title>
-</head>
-<body>
-
-<div class="sidebar">
-  <h2>🏠 SmartHome</h2>
-  <a href="dashboard.html">Dashboard</a>
-  <a href="logs.html">📜 Logs</a>
-  <a href="users.html" id="uLink">👤 Users</a>
-  <a href="#" onclick="logout()">🚪 Logout</a>
-</div>
-
-<div class="main">
-  <div class="topbar">
-    <div>User: <span class="badge" id="user"></span></div>
-    <div>Role: <span class="badge" id="role"></span></div>
-  </div>
-
-  <div class="grid">
-    <div class="card">
-      <h3>Điều khiển</h3>
-      <button class="btn btn-primary" onclick="door()">🚪 Mở Door</button>
-      <button class="btn btn-soft" onclick="light('ON')">💡 ON</button>
-      <button class="btn btn-ghost" onclick="light('OFF')">💡 OFF</button>
-      <p id="state" style="margin-top:10px;font-weight:bold;"></p>
-    </div>
-
-    <div class="card">
-      <h3>Thông tin</h3>
-      <p>Ở đây có thể hiển thị trạng thái thiết bị, alert, hoặc info dashboard</p>
-    </div>
-  </div>
-</div>
-
 <script>
 const token = localStorage.getItem("token");
-if(!token) location.href="index.html";
-user.innerText = localStorage.getItem("user");
-role.innerText = localStorage.getItem("role");
-if(role.innerText !== "admin"){ document.getElementById("uLink").style.display="none"; }
 
-async function door(){ await fetch(API+"/door",{method:"POST", headers:{Authorization:token}});}
-async function light(s){ await fetch(API+"/light",{method:"POST", headers:{"Content-Type":"application/json", Authorization:token}, body: JSON.stringify({state:s})});}
-
-async function loadStatus(){
-  let r = await fetch(API+"/status"); 
-  let d = await r.json(); 
-  state.innerText = "Trạng thái: " + d.result;
+// 🔥 FIX token check
+if(!token || token === "undefined" || token === "null"){
+  alert("Chưa đăng nhập!");
+  location.href="index.html";
 }
-setInterval(loadStatus,1000); loadStatus();
 
-function logout(){ localStorage.clear(); location.href="index.html"; }
+// set info
+document.getElementById("user").innerText = localStorage.getItem("user");
+document.getElementById("role").innerText = localStorage.getItem("role");
+
+// hide user menu nếu không phải admin
+if(localStorage.getItem("role") !== "admin"){
+  document.getElementById("uLink").style.display="none";
+}
+
+// ===== API CALL =====
+async function door(){
+  try{
+    let res = await fetch(API+"/door",{
+      method:"POST",
+      headers:{
+        "Authorization": "Bearer " + token
+      }
+    });
+
+    if(res.status === 401){
+      logout();
+    }
+
+  }catch(e){
+    console.error(e);
+    alert("Lỗi kết nối server");
+  }
+}
+
+async function light(s){
+  try{
+    let res = await fetch(API+"/light",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({state:s})
+    });
+
+    if(res.status === 401){
+      logout();
+    }
+
+  }catch(e){
+    console.error(e);
+    alert("Lỗi kết nối server");
+  }
+}
+
+// ===== STATUS =====
+async function loadStatus(){
+  try{
+    let r = await fetch(API+"/status");
+    let d = await r.json();
+    document.getElementById("state").innerText = "Trạng thái: " + d.result;
+  }catch(e){
+    console.error(e);
+  }
+}
+
+setInterval(loadStatus,1000);
+loadStatus();
+
+// ===== LOGOUT =====
+function logout(){
+  localStorage.clear();
+  location.href="index.html";
+}
 </script>
-</body>
-</html>

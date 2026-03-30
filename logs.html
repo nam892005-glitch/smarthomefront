@@ -1,63 +1,63 @@
-<!doctype html>
-<html>
-<head>
-<link rel="stylesheet" href="style.css">
-<script src="config.js"></script>
-<title>Logs Hoạt động</title>
-</head>
-<body>
-
-<div class="sidebar">
-  <h2>🏠 SmartHome</h2>
-  <a href="dashboard.html">Dashboard</a>
-  <a href="logs.html">📜 Logs</a>
-  <a href="users.html" id="uLink">👤 Users</a>
-  <a href="#" onclick="logout()">🚪 Logout</a>
-</div>
-
-<div class="main">
-  <div class="topbar">
-    <div>User: <span class="badge" id="user"></span></div>
-    <div>Role: <span class="badge" id="role"></span></div>
-  </div>
-
-  <div class="card">
-    <h3>Logs Hoạt động gần đây</h3>
-    <table>
-      <thead>
-        <tr><th>Thời gian</th><th>User</th><th>Hành động</th></tr>
-      </thead>
-      <tbody id="logList"></tbody>
-    </table>
-  </div>
-</div>
-
 <script>
 const token = localStorage.getItem("token");
-if(!token) location.href="index.html";
-user.innerText = localStorage.getItem("user");
-role.innerText = localStorage.getItem("role");
-if(role.innerText !== "admin"){ document.getElementById("uLink").style.display="none"; }
 
-async function load(){
-  let r = await fetch(API+"/logs",{headers:{Authorization:token}});
-  let d = await r.json();
-  logList.innerHTML="";
-  d.logs.forEach(log=>{
-    logList.innerHTML += `
-      <tr>
-        <td>${log.time}</td>
-        <td>${log.user}</td>
-        <td>${log.action}</td>
-      </tr>
-    `;
-  });
+// 🔥 FIX check token
+if(!token || token === "undefined" || token === "null"){
+  alert("Chưa đăng nhập!");
+  location.href="index.html";
 }
 
-function logout(){ localStorage.clear(); location.href="index.html"; }
+// set user info
+document.getElementById("user").innerText = localStorage.getItem("user");
+document.getElementById("role").innerText = localStorage.getItem("role");
 
+// hide user menu nếu không phải admin
+if(localStorage.getItem("role") !== "admin"){
+  document.getElementById("uLink").style.display="none";
+}
+
+// ===== LOAD LOGS =====
+async function load(){
+  try{
+    let r = await fetch(API+"/logs",{
+      headers:{
+        "Authorization": "Bearer " + token
+      }
+    });
+
+    // 🔥 nếu token sai → logout luôn
+    if(r.status === 401){
+      logout();
+      return;
+    }
+
+    let d = await r.json();
+
+    const logList = document.getElementById("logList");
+    logList.innerHTML = "";
+
+    d.logs.forEach(log=>{
+      logList.innerHTML += `
+        <tr>
+          <td>${log.time}</td>
+          <td>${log.user}</td>
+          <td>${log.action}</td>
+        </tr>
+      `;
+    });
+
+  }catch(e){
+    console.error("LOAD LOG ERROR:", e);
+  }
+}
+
+// ===== LOGOUT =====
+function logout(){
+  localStorage.clear();
+  location.href="index.html";
+}
+
+// auto reload logs
 load();
-setInterval(load,5000); // Cập nhật logs mỗi 5s
+setInterval(load,5000);
 </script>
-</body>
-</html>
