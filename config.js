@@ -1,1 +1,0 @@
-const API = "https://smarthome-github-io-7.onrender.com";
