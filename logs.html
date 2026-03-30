@@ -1,130 +1,25 @@
 <!doctype html>
-<html lang="vi">
+<html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>SmartHome • Logs</title>
-
-  <link rel="stylesheet" href="style.css">
-
-  <style>
-    .log-list{
-      list-style:none;
-      padding:0;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-
-    .log-item{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      padding:12px;
-      border-radius:12px;
-      background:white;
-      border:1px solid #f1c6d4;
-      box-shadow:0 5px 15px rgba(233,30,99,0.08);
-      transition:0.2s;
-    }
-
-    .log-item:hover{
-      transform:translateY(-2px);
-    }
-
-    .pill{
-      background:#ffe4ec;
-      color:#c2185b;
-      padding:5px 10px;
-      border-radius:20px;
-      font-size:12px;
-      font-weight:bold;
-      margin-right:8px;
-    }
-
-    .meta{
-      font-size:12px;
-      color:#64748b;
-    }
-
-    .empty{
-      text-align:center;
-      padding:20px;
-      color:#999;
-    }
-  </style>
+  <title>Logs</title>
 </head>
-
 <body>
 
-<div class="container">
-
-  <div class="topbar">
-    <h2>📜 Logs</h2>
-    <a href="dashboard.html">← Back</a>
-  </div>
-
-  <div class="card">
-    <ul id="logList" class="log-list"></ul>
-    <div id="empty" class="empty">Đang tải...</div>
-  </div>
-
-</div>
+<h2>Logs</h2>
+<ul id="logs"></ul>
 
 <script>
 const API = "https://smarthome-github-io-7.onrender.com";
 
-// 🔒 chặn chưa login
-if(!localStorage.getItem("user")){
-  window.location.href = "index.html";
-}
-
-async function loadLogs(){
-  try{
-    let res = await fetch(API + "/logs");
-    let data = await res.json();
-
-    let list = document.getElementById("logList");
-    let empty = document.getElementById("empty");
-
-    list.innerHTML = "";
-
-    if(!data.logs || data.logs.length === 0){
-      empty.innerText = "Chưa có log nào";
-      empty.style.display = "block";
-      return;
-    }
-
-    empty.style.display = "none";
-
-    // 🔥 SẮP XẾP MỚI NHẤT LÊN TRÊN
-    const sorted = data.logs.sort((a, b) => {
-      return new Date(b.time) - new Date(a.time);
-    });
-
-    sorted.forEach(log => {
-      let li = document.createElement("li");
-      li.className = "log-item";
-
-      li.innerHTML = `
-        <div>
-          <span class="pill">🕒 ${log.time || "--"}</span>
-          <span class="meta">👤 ${log.user || "unknown"}</span>
-        </div>
-        <div><b>${log.action || log.topic || log.payload || "-"}</b></div>
-      `;
-
-      list.appendChild(li);
-    });
-
-  }catch(err){
-    document.getElementById("empty").innerText = "Lỗi tải dữ liệu!";
-  }
-}
-
-// 🚀 auto refresh 2s
-setInterval(loadLogs, 2000);
-loadLogs();
+fetch(API + "/logs")
+.then(r=>r.json())
+.then(data=>{
+  let html="";
+  data.forEach(l=>{
+    html += "<li>"+l.user+" - "+l.action+"</li>";
+  });
+  document.getElementById("logs").innerHTML = html;
+});
 </script>
 
 </body>
