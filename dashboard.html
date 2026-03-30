@@ -1,79 +1,90 @@
 <script>
 const token = localStorage.getItem("token");
 
-// 🔥 FIX token check
+// ===== CHECK TOKEN =====
 if(!token || token === "undefined" || token === "null"){
   alert("Chưa đăng nhập!");
-  location.href="index.html";
+  window.location.href = "index.html";
 }
 
-// set info
-document.getElementById("user").innerText = localStorage.getItem("user");
-document.getElementById("role").innerText = localStorage.getItem("role");
+// ===== SET USER INFO =====
+const userEl = document.getElementById("user");
+const roleEl = document.getElementById("role");
+
+userEl.innerText = localStorage.getItem("user") || "--";
+roleEl.innerText = localStorage.getItem("role") || "--";
 
 // hide user menu nếu không phải admin
-if(localStorage.getItem("role") !== "admin"){
-  document.getElementById("uLink").style.display="none";
+if(roleEl.innerText !== "admin"){
+  const link = document.getElementById("uLink");
+  if(link) link.style.display = "none";
 }
 
-// ===== API CALL =====
-async function door(){
+// ===== HELPER FETCH =====
+async function apiFetch(url, options = {}){
   try{
-    let res = await fetch(API+"/door",{
-      method:"POST",
+    const res = await fetch(API + url, {
+      ...options,
       headers:{
+        ...(options.headers || {}),
         "Authorization": "Bearer " + token
       }
     });
 
+    // 🔥 xử lý token hết hạn
     if(res.status === 401){
+      alert("Phiên đăng nhập hết hạn!");
       logout();
+      return null;
     }
 
+    return res;
+
   }catch(e){
-    console.error(e);
-    alert("Lỗi kết nối server");
+    console.error("FETCH ERROR:", e);
+    alert("Không kết nối được server!");
+    return null;
   }
 }
 
-async function light(s){
-  try{
-    let res = await fetch(API+"/light",{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        "Authorization": "Bearer " + token
-      },
-      body: JSON.stringify({state:s})
-    });
+// ===== API CALL =====
+async function door(){
+  const res = await apiFetch("/door", { method:"POST" });
+  if(res) console.log("Door OK");
+}
 
-    if(res.status === 401){
-      logout();
-    }
+async function light(state){
+  const res = await apiFetch("/light", {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json"
+    },
+    body: JSON.stringify({state})
+  });
 
-  }catch(e){
-    console.error(e);
-    alert("Lỗi kết nối server");
-  }
+  if(res) console.log("Light:", state);
 }
 
 // ===== STATUS =====
 async function loadStatus(){
   try{
-    let r = await fetch(API+"/status");
+    let r = await fetch(API + "/status");
+    if(!r.ok) return;
+
     let d = await r.json();
-    document.getElementById("state").innerText = "Trạng thái: " + d.result;
+    document.getElementById("state").innerText = "Trạng thái: " + (d.result || "--");
+
   }catch(e){
-    console.error(e);
+    console.error("STATUS ERROR:", e);
   }
 }
 
-setInterval(loadStatus,1000);
+setInterval(loadStatus, 1000);
 loadStatus();
 
 // ===== LOGOUT =====
 function logout(){
   localStorage.clear();
-  location.href="index.html";
+  window.location.href = "index.html";
 }
 </script>

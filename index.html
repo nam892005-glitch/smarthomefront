@@ -1,36 +1,54 @@
 <script>
 async function login(){
+  const username = document.getElementById("u").value.trim();
+  const password = document.getElementById("p").value.trim();
+
+  if(!username || !password){
+    alert("Vui lòng nhập đầy đủ!");
+    return;
+  }
+
   try{
-    let res = await fetch(API + "/login", {
+    const res = await fetch(API + "/login", {
       method:"POST",
       headers:{
         "Content-Type":"application/json"
       },
-      body: JSON.stringify({
-        username: document.getElementById("u").value.trim(),
-        password: document.getElementById("p").value.trim()
-      })
+      body: JSON.stringify({ username, password })
     });
 
-    let data = await res.json();
+    // 🔥 check HTTP status trước
+    if(!res.ok){
+      alert("Server lỗi hoặc không phản hồi!");
+      return;
+    }
+
+    const data = await res.json();
     console.log("LOGIN RESPONSE:", data);
 
-    // 🔥 FIX: kiểm tra kỹ success + token
-    if(data && data.success === true && data.token){
-      
-      // lưu token
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", data.user);
-      localStorage.setItem("role", data.role);
+    // 🔥 CHECK CHUẨN
+    if(data?.success && data?.token){
 
-      console.log("TOKEN:", data.token);
+      // 🔥 đảm bảo token là string
+      const token = String(data.token);
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", data.user || "");
+      localStorage.setItem("role", data.role || "");
+
+      console.log("TOKEN SAVED:", token);
+
+      // 🔥 verify lại sau khi lưu
+      const saved = localStorage.getItem("token");
+      if(!saved){
+        alert("Lỗi lưu token!");
+        return;
+      }
 
       alert("Login thành công!");
 
-      // delay tránh bug redirect
-      setTimeout(()=>{
-        window.location.href = "dashboard.html";
-      }, 300);
+      // redirect ngay (không cần delay nữa)
+      window.location.href = "dashboard.html";
 
     }else{
       alert("Sai tài khoản hoặc mật khẩu");

@@ -1,63 +1,90 @@
 <script>
 const token = localStorage.getItem("token");
 
-// 🔥 FIX check token
+// ===== CHECK TOKEN =====
 if(!token || token === "undefined" || token === "null"){
   alert("Chưa đăng nhập!");
-  location.href="index.html";
+  window.location.href = "index.html";
 }
 
-// set user info
-document.getElementById("user").innerText = localStorage.getItem("user");
-document.getElementById("role").innerText = localStorage.getItem("role");
+// ===== SET USER INFO =====
+const user = localStorage.getItem("user") || "--";
+const role = localStorage.getItem("role") || "--";
+
+document.getElementById("user").innerText = user;
+document.getElementById("role").innerText = role;
 
 // hide user menu nếu không phải admin
-if(localStorage.getItem("role") !== "admin"){
-  document.getElementById("uLink").style.display="none";
+const uLink = document.getElementById("uLink");
+if(role !== "admin" && uLink){
+  uLink.style.display = "none";
 }
 
-// ===== LOAD LOGS =====
-async function load(){
+// ===== HELPER FETCH =====
+async function apiFetch(url){
   try{
-    let r = await fetch(API+"/logs",{
+    const res = await fetch(API + url, {
       headers:{
         "Authorization": "Bearer " + token
       }
     });
 
-    // 🔥 nếu token sai → logout luôn
-    if(r.status === 401){
+    if(res.status === 401){
+      alert("Phiên đăng nhập hết hạn!");
       logout();
-      return;
+      return null;
     }
 
-    let d = await r.json();
-
-    const logList = document.getElementById("logList");
-    logList.innerHTML = "";
-
-    d.logs.forEach(log=>{
-      logList.innerHTML += `
-        <tr>
-          <td>${log.time}</td>
-          <td>${log.user}</td>
-          <td>${log.action}</td>
-        </tr>
-      `;
-    });
+    return res;
 
   }catch(e){
-    console.error("LOAD LOG ERROR:", e);
+    console.error("FETCH ERROR:", e);
+    return null;
   }
+}
+
+// ===== LOAD LOGS =====
+async function load(){
+  const res = await apiFetch("/logs");
+  if(!res) return;
+
+  const data = await res.json();
+  const logList = document.getElementById("logList");
+
+  // 🔥 clear trước
+  logList.innerHTML = "";
+
+  // 🔥 nếu không có logs
+  if(!data.logs || data.logs.length === 0){
+    logList.innerHTML = `
+      <tr>
+        <td colspan="3" style="text-align:center;">Không có dữ liệu</td>
+      </tr>
+    `;
+    return;
+  }
+
+  // 🔥 render logs
+  data.logs.forEach(log=>{
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${log.time || "--"}</td>
+      <td>${log.user || "--"}</td>
+      <td>${log.action || "--"}</td>
+    `;
+
+    logList.appendChild(row);
+  });
 }
 
 // ===== LOGOUT =====
 function logout(){
   localStorage.clear();
-  location.href="index.html";
+  window.location.href = "index.html";
 }
 
-// auto reload logs
+// ===== AUTO LOAD =====
 load();
-setInterval(load,5000);
+setInterval(load, 5000);
 </script>

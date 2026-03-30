@@ -1,122 +1,136 @@
 <script>
 const token = localStorage.getItem("token");
 
-// 🔥 check token
+// ===== CHECK TOKEN =====
 if(!token || token === "undefined" || token === "null"){
   alert("Chưa đăng nhập!");
-  location.href="index.html";
+  window.location.href = "index.html";
 }
 
-// set info
-document.getElementById("user").innerText = localStorage.getItem("user");
-document.getElementById("role").innerText = localStorage.getItem("role");
+// ===== SET INFO =====
+const user = localStorage.getItem("user") || "--";
+const role = localStorage.getItem("role") || "--";
 
-// 🔥 chỉ admin mới được vào trang này
-if(localStorage.getItem("role") !== "admin"){
+document.getElementById("user").innerText = user;
+document.getElementById("role").innerText = role;
+
+// ===== CHECK ADMIN =====
+if(role !== "admin"){
   alert("Bạn không có quyền truy cập!");
-  location.href="dashboard.html";
+  window.location.href = "dashboard.html";
 }
 
-// ===== LOAD USERS =====
-async function load(){
+// ===== HELPER FETCH =====
+async function apiFetch(url, options = {}){
   try{
-    let r = await fetch(API+"/users",{
+    const res = await fetch(API + url, {
+      ...options,
       headers:{
+        ...(options.headers || {}),
         "Authorization": "Bearer " + token
       }
     });
 
-    if(r.status === 401 || r.status === 403){
+    if(res.status === 401 || res.status === 403){
+      alert("Phiên đăng nhập không hợp lệ!");
       logout();
-      return;
+      return null;
     }
 
-    let d = await r.json();
-
-    const userList = document.getElementById("userList");
-    userList.innerHTML = "";
-
-    d.users.forEach(u=>{
-      userList.innerHTML += `
-        <tr>
-          <td>${u.username}</td>
-          <td>${u.role}</td>
-          <td>
-            <button class="btn btn-ghost" onclick="delUser('${u.username}')">
-              Xóa
-            </button>
-          </td>
-        </tr>
-      `;
-    });
+    return res;
 
   }catch(e){
-    console.error("LOAD USERS ERROR:", e);
+    console.error("FETCH ERROR:", e);
+    alert("Không kết nối được server!");
+    return null;
   }
+}
+
+// ===== LOAD USERS =====
+async function load(){
+  const res = await apiFetch("/users");
+  if(!res) return;
+
+  const data = await res.json();
+  const userList = document.getElementById("userList");
+
+  userList.innerHTML = "";
+
+  if(!data.users || data.users.length === 0){
+    userList.innerHTML = `
+      <tr>
+        <td colspan="3" style="text-align:center;">Không có user</td>
+      </tr>
+    `;
+    return;
+  }
+
+  data.users.forEach(u=>{
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${u.username || "--"}</td>
+      <td>${u.role || "--"}</td>
+      <td>
+        ${u.username !== "admin" ? 
+          `<button class="btn btn-ghost" onclick="delUser('${u.username}')">Xóa</button>` 
+          : `<span style="color:gray;">Protected</span>`
+        }
+      </td>
+    `;
+
+    userList.appendChild(row);
+  });
 }
 
 // ===== ADD USER =====
 async function add(){
-  try{
-    let res = await fetch(API+"/add_user",{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        "Authorization": "Bearer " + token
-      },
-      body: JSON.stringify({
-        username: document.getElementById("u").value.trim(),
-        password: document.getElementById("p").value.trim(),
-        role: document.getElementById("r").value
-      })
-    });
+  const username = document.getElementById("u").value.trim();
+  const password = document.getElementById("p").value.trim();
+  const role = document.getElementById("r").value;
 
-    if(res.status === 401 || res.status === 403){
-      logout();
-      return;
-    }
-
-    alert("Thêm user thành công!");
-    document.getElementById("u").value="";
-    document.getElementById("p").value="";
-
-    load();
-
-  }catch(e){
-    console.error("ADD USER ERROR:", e);
+  if(!username || !password){
+    alert("Vui lòng nhập đầy đủ!");
+    return;
   }
+
+  const res = await apiFetch("/add_user", {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json"
+    },
+    body: JSON.stringify({ username, password, role })
+  });
+
+  if(!res) return;
+
+  alert("Thêm user thành công!");
+
+  document.getElementById("u").value = "";
+  document.getElementById("p").value = "";
+
+  load();
 }
 
 // ===== DELETE USER =====
 async function delUser(name){
   if(!confirm("Xóa user " + name + "?")) return;
 
-  try{
-    let res = await fetch(API+"/delete/"+name,{
-      method:"DELETE",
-      headers:{
-        "Authorization": "Bearer " + token
-      }
-    });
+  const res = await apiFetch("/delete/" + name, {
+    method:"DELETE"
+  });
 
-    if(res.status === 401 || res.status === 403){
-      logout();
-      return;
-    }
+  if(!res) return;
 
-    load();
-
-  }catch(e){
-    console.error("DELETE USER ERROR:", e);
-  }
+  load();
 }
 
 // ===== LOGOUT =====
 function logout(){
   localStorage.clear();
-  location.href="index.html";
+  window.location.href = "index.html";
 }
 
-// load data
+// ===== INIT =====
 load();
 </script>
