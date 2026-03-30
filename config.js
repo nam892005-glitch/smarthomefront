@@ -1,12 +1,4 @@
-// ===== CONFIG API =====
-window.API_BASE = "https://smarthome-github-io-7.onrender.com";
-
-// alias cho code cũ
-window.API = window.API_BASE;
-
-// helper
-window.api = function(path){
-  return window.API_BASE + path;
-};
-
-console.log("API:", window.API_BASE);
+const API_BASE = "https://smarthome-github-io-7.onrender.com";
+const API = API_BASE;
+function api(path){ return API_BASE + path; }
+console.log("API:", API_BASE);
