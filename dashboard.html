@@ -82,17 +82,30 @@
     }
 
     // ===== CONTROL =====
-    async function door(){
-      await fetch(API + "/door",{method:"POST"})
-    }
+  async function door(){
+    await fetch(API + "/door", {
+      method:"POST",
+      headers:{
+      "Content-Type":"application/json"
+    },
+    body: JSON.stringify({
+      user: user   // ✅ QUAN TRỌNG
+    })
+  })
+}
 
-    async function light(s){
-      await fetch(API + "/light",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({state:s})
-      })
-    }
+  async function light(s){
+    await fetch(API + "/light", {
+      method:"POST",
+      headers:{
+      "Content-Type":"application/json"
+    },
+    body: JSON.stringify({
+      user: user,  // ✅ QUAN TRỌNG
+      state: s
+    })
+  })
+}
 
     // ===== STATUS =====
     async function update(){
