@@ -3,16 +3,14 @@
 <head>
 <link rel="stylesheet" href="style.css">
 <script src="config.js"></script>
+<title>SmartHome Login</title>
 </head>
-
 <body>
-<div class="container">
+<div class="main" style="margin:auto; max-width:400px;">
   <div class="card">
-    <h2>🔐 Login</h2>
-
+    <h2 style="text-align:center;">🔐 SmartHome Login</h2>
     <input id="u" placeholder="Username">
     <input id="p" type="password" placeholder="Password">
-
     <button class="btn btn-primary" onclick="login()">Login</button>
   </div>
 </div>
@@ -22,21 +20,16 @@ async function login(){
   let res = await fetch(API + "/login", {
     method:"POST",
     headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({
-      username: u.value,
-      password: p.value
-    })
+    body: JSON.stringify({ username: u.value, password: p.value })
   });
-
   let data = await res.json();
-
   if(data.success){
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", data.user);
     localStorage.setItem("role", data.role);
     location.href="dashboard.html";
   }else{
-    alert("Sai tài khoản");
+    alert("Sai tài khoản hoặc mật khẩu");
   }
 }
 </script>

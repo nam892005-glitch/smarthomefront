@@ -3,41 +3,63 @@
 <head>
 <link rel="stylesheet" href="style.css">
 <script src="config.js"></script>
+<title>Quản lý Users</title>
 </head>
-
 <body>
-<div class="container">
 
-<h2>👤 Users</h2>
+<div class="sidebar">
+  <h2>🏠 SmartHome</h2>
+  <a href="dashboard.html">Dashboard</a>
+  <a href="logs.html">📜 Logs</a>
+  <a href="users.html">👤 Users</a>
+  <a href="#" onclick="logout()">🚪 Logout</a>
+</div>
 
-<input id="u" placeholder="username">
-<input id="p" placeholder="password">
-<select id="r">
-  <option value="user">user</option>
-  <option value="admin">admin</option>
-</select>
+<div class="main">
+  <div class="topbar">
+    <div>User: <span class="badge" id="user"></span></div>
+    <div>Role: <span class="badge" id="role"></span></div>
+  </div>
 
-<button class="btn btn-primary" onclick="add()">Add</button>
+  <div class="card">
+    <h3>Thêm User mới</h3>
+    <input id="u" placeholder="Username">
+    <input id="p" placeholder="Password">
+    <select id="r">
+      <option value="user">User</option>
+      <option value="admin">Admin</option>
+    </select>
+    <button class="btn btn-primary" onclick="add()">Thêm User</button>
+  </div>
 
-<ul id="list"></ul>
-
+  <div class="card">
+    <h3>Danh sách Users</h3>
+    <table>
+      <thead>
+        <tr><th>Username</th><th>Role</th><th>Action</th></tr>
+      </thead>
+      <tbody id="userList"></tbody>
+    </table>
+  </div>
 </div>
 
 <script>
 const token = localStorage.getItem("token");
+if(!token) location.href="index.html";
+user.innerText = localStorage.getItem("user");
+role.innerText = localStorage.getItem("role");
 
 async function load(){
-  let r = await fetch(API+"/users",{
-    headers:{Authorization:token}
-  });
-
+  let r = await fetch(API+"/users",{headers:{Authorization:token}});
   let d = await r.json();
-
-  list.innerHTML="";
+  userList.innerHTML="";
   d.users.forEach(u=>{
-    list.innerHTML += `
-      <li>${u.username} (${u.role})
-      <button onclick="del('${u.username}')">x</button></li>
+    userList.innerHTML += `
+      <tr>
+        <td>${u.username}</td>
+        <td>${u.role}</td>
+        <td><button class="btn btn-ghost" onclick="del('${u.username}')">Xóa</button></td>
+      </tr>
     `;
   });
 }
@@ -45,26 +67,20 @@ async function load(){
 async function add(){
   await fetch(API+"/add_user",{
     method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      Authorization:token
-    },
-    body: JSON.stringify({
-      username:u.value,
-      password:p.value,
-      role:r.value
-    })
+    headers:{"Content-Type":"application/json", Authorization:token},
+    body: JSON.stringify({ username:u.value, password:p.value, role:r.value })
   });
+  u.value=""; p.value="";
   load();
 }
 
 async function del(name){
-  await fetch(API+"/delete/"+name,{
-    method:"DELETE",
-    headers:{Authorization:token}
-  });
+  if(!confirm("Xóa user "+name+"?")) return;
+  await fetch(API+"/delete/"+name,{method:"DELETE", headers:{Authorization:token}});
   load();
 }
+
+function logout(){ localStorage.clear(); location.href="index.html"; }
 
 load();
 </script>
