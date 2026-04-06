@@ -1,154 +1,100 @@
-<!doctype html>
-<html lang="vi">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>SmartHome • Users</title>
-
-  <!-- bỏ flask -->
-  <link rel="stylesheet" href="style.css">
-
-  <style>
-    .form-grid{
-      display:grid;
-      grid-template-columns: 1fr 1fr 150px 120px;
-      gap:10px;
-    }
-
-    .input, .select{
-      padding:10px;
-      border-radius:8px;
-      border:1px solid #ccc;
-    }
-
-    .table{
-      width:100%;
-      margin-top:20px;
-      border-collapse:collapse;
-    }
-
-    .table th, .table td{
-      padding:10px;
-      border:1px solid #ddd;
-    }
-
-    .role-admin{ color:red; font-weight:bold; }
-    .role-member{ color:#555; }
-
-    .btn{
-      padding:8px 12px;
-      border:none;
-      border-radius:5px;
-      cursor:pointer;
-    }
-
-    .btn-add{ background:#3b82f6; color:white; }
-    .btn-del{ background:red; color:white; }
-  </style>
-</head>
-
-<body>
-
-<div class="container">
-
-  <h2>👤 User Management</h2>
-
-  <!-- ADD USER -->
-  <div class="card">
-    <h3>Thêm user</h3>
-
-    <div class="form-grid">
-      <input id="u" class="input" placeholder="username">
-      <input id="p" class="input" type="password" placeholder="password">
-      
-      <select id="r" class="select">
-        <option value="member">member</option>
-        <option value="admin">admin</option>
-      </select>
-
-      <button class="btn btn-add" onclick="addUser()">Add</button>
-    </div>
-  </div>
-
-  <!-- LIST -->
-  <div class="card">
-    <h3>Danh sách user</h3>
-
-    <table class="table">
-      <thead>
-        <tr>
-          <th>User</th>
-          <th>Role</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody id="userTable"></tbody>
-    </table>
-
-    <div id="empty">Đang tải...</div>
-  </div>
-
-</div>
-
 <script>
-const API = "https://smarthome-github-io-7.onrender.com"; // ⚠️ sửa
+const API = "https://smarthome-github-io-7.onrender.com";
+
+// 🔐 CHECK LOGIN + ROLE
+if(!localStorage.getItem("user")) location="index.html";
+
+if(localStorage.getItem("role") !== "admin"){
+  alert("Bạn không có quyền vào trang này!");
+  location = "dashboard.html";
+}
 
 // LOAD USERS
 async function loadUsers(){
-  let res = await fetch(API + "/users");
-  let data = await res.json();
+  try{
+    let res = await fetch(API + "/users");
+    let data = await res.json();
 
-  let table = document.getElementById("userTable");
-  let empty = document.getElementById("empty");
+    let table = document.getElementById("userTable");
+    let empty = document.getElementById("empty");
 
-  table.innerHTML = "";
+    table.innerHTML = "";
 
-  if(!data.users || data.users.length === 0){
-    empty.innerText = "Chưa có user";
-    return;
+    if(!data.users || data.users.length === 0){
+      empty.innerText = "Chưa có user";
+      return;
+    }
+
+    empty.style.display = "none";
+
+    data.users.forEach(u=>{
+      let tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td><b>${u.username}</b></td>
+        <td class="${u.role==='admin'?'role-admin':'role-member'}">${u.role}</td>
+        <td>
+          <button class="btn btn-del" onclick="delUser('${u.username}')">
+            X
+          </button>
+        </td>
+      `;
+
+      table.appendChild(tr);
+    });
+
+  }catch(e){
+    document.getElementById("empty").innerText = "Lỗi server!";
   }
-
-  empty.style.display = "none";
-
-  data.users.forEach(u=>{
-    let tr = document.createElement("tr");
-
-    tr.innerHTML = `
-      <td><b>${u.username}</b></td>
-      <td class="${u.role==='admin'?'role-admin':'role-member'}">${u.role}</td>
-      <td><button class="btn btn-del" onclick="delUser('${u.username}')">X</button></td>
-    `;
-
-    table.appendChild(tr);
-  });
 }
 
 // ADD USER
 async function addUser(){
-  await fetch(API + "/add_user",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({
-      username: document.getElementById("u").value,
-      password: document.getElementById("p").value,
-      role: document.getElementById("r").value
-    })
-  });
+  let u = document.getElementById("u").value.trim();
+  let p = document.getElementById("p").value.trim();
+  let r = document.getElementById("r").value;
 
-  loadUsers();
+  if(!u || !p){
+    alert("Nhập đủ username + password!");
+    return;
+  }
+
+  try{
+    let res = await fetch(API + "/add_user",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({username:u, password:p, role:r})
+    });
+
+    let d = await res.json();
+
+    if(d.success){
+      alert("Thêm thành công");
+      loadUsers();
+    } else {
+      alert(d.message || "Lỗi!");
+    }
+
+  }catch(e){
+    alert("Server lỗi!");
+  }
 }
 
 // DELETE
 async function delUser(u){
-  await fetch(API + "/delete/" + u,{
-    method:"DELETE"
-  });
+  if(!confirm("Xóa user " + u + " ?")) return;
 
-  loadUsers();
+  try{
+    await fetch(API + "/delete/" + u,{
+      method:"DELETE"
+    });
+
+    loadUsers();
+
+  }catch(e){
+    alert("Lỗi server!");
+  }
 }
 
 loadUsers();
 </script>
-
-</body>
-</html>
