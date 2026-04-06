@@ -1,50 +1,39 @@
-<!doctype html>
-<html lang="vi">
+<!DOCTYPE html>
+<html>
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SmartHome Login</title>
-<link rel="stylesheet" href="style.css">
+  <title>Login</title>
 </head>
+<body>
 
-<body class="center">
+<h2>Login</h2>
 
-<div class="card">
-  <h2>🔐 SmartHome</h2>
-
-  <form onsubmit="login(event)">
-    <input id="user" placeholder="Username" required>
-    <input id="pass" type="password" placeholder="Password" required>
-    <button>Login</button>
-  </form>
-
-  <p id="msg"></p>
-</div>
+<input id="username" placeholder="Username"><br>
+<input id="password" type="password" placeholder="Password"><br>
+<button onclick="login()">Login</button>
 
 <script>
-const API = "https://smarthome-github-io-7.onrender.com";
+const API = "https://smarthome-github-io-7.onrender.com"
+"
 
-function login(e){
-  e.preventDefault();
-
+function login(){
   fetch(API + "/login", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
     body: JSON.stringify({
-      username: user.value,
-      password: pass.value
+      username: document.getElementById("username").value,
+      password: document.getElementById("password").value
     })
   })
-  .then(r=>r.json())
-  .then(d=>{
-    if(d.success){
-      localStorage.setItem("user", d.user);
-      localStorage.setItem("role", d.role);
-      location.href="dashboard.html";
+  .then(res => res.json())
+  .then(data => {
+    if(data.success){
+      localStorage.setItem("user", data.user)
+      localStorage.setItem("role", data.role)
+      window.location.href = "dashboard.html"
     } else {
-      msg.innerText = "Sai tài khoản";
+      alert("Sai tài khoản")
     }
-  });
+  })
 }
 </script>
 
