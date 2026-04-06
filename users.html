@@ -1,100 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>User Manager</title>
+</head>
+<body>
+
+<h2>👑 Quản lý user</h2>
+
+<a href="dashboard.html">🏠 Dashboard</a> |
+<a href="log.html">📊 Logs</a>
+
+<hr>
+
+<div id="adminOnly">
+
+  <input id="newUser" placeholder="Username">
+  <input id="newPass" placeholder="Password">
+
+  <select id="newRole">
+    <option value="user">user</option>
+    <option value="admin">admin</option>
+  </select>
+
+  <button onclick="addUser()">➕ Thêm</button>
+
+  <table border="1">
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Role</th>
+        <th>Xoá</th>
+      </tr>
+    </thead>
+    <tbody id="userTable"></tbody>
+  </table>
+
+</div>
+
 <script>
-const API = "https://smarthome-github-io-7.onrender.com";
+const API = "http://localhost:10000"
+const role = localStorage.getItem("role")
 
-// 🔐 CHECK LOGIN + ROLE
-if(!localStorage.getItem("user")) location="index.html";
-
-if(localStorage.getItem("role") !== "admin"){
-  alert("Bạn không có quyền vào trang này!");
-  location = "dashboard.html";
+// CHẶN USER THƯỜNG
+if(role !== "admin"){
+  alert("Bạn không có quyền!")
+  window.location.href = "dashboard.html"
 }
 
-// LOAD USERS
-async function loadUsers(){
-  try{
-    let res = await fetch(API + "/users");
-    let data = await res.json();
+// LOAD USER
+function loadUsers(){
+  fetch(API + "/users")
+    .then(res => res.json())
+    .then(data => {
+      let html = ""
 
-    let table = document.getElementById("userTable");
-    let empty = document.getElementById("empty");
+      data.users.forEach(u => {
+        html += `
+          <tr>
+            <td>${u.username}</td>
+            <td>${u.role}</td>
+            <td><button onclick="deleteUser('${u.username}')">X</button></td>
+          </tr>
+        `
+      })
 
-    table.innerHTML = "";
-
-    if(!data.users || data.users.length === 0){
-      empty.innerText = "Chưa có user";
-      return;
-    }
-
-    empty.style.display = "none";
-
-    data.users.forEach(u=>{
-      let tr = document.createElement("tr");
-
-      tr.innerHTML = `
-        <td><b>${u.username}</b></td>
-        <td class="${u.role==='admin'?'role-admin':'role-member'}">${u.role}</td>
-        <td>
-          <button class="btn btn-del" onclick="delUser('${u.username}')">
-            X
-          </button>
-        </td>
-      `;
-
-      table.appendChild(tr);
-    });
-
-  }catch(e){
-    document.getElementById("empty").innerText = "Lỗi server!";
-  }
+      document.getElementById("userTable").innerHTML = html
+    })
 }
 
-// ADD USER
-async function addUser(){
-  let u = document.getElementById("u").value.trim();
-  let p = document.getElementById("p").value.trim();
-  let r = document.getElementById("r").value;
-
-  if(!u || !p){
-    alert("Nhập đủ username + password!");
-    return;
-  }
-
-  try{
-    let res = await fetch(API + "/add_user",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({username:u, password:p, role:r})
-    });
-
-    let d = await res.json();
-
-    if(d.success){
-      alert("Thêm thành công");
-      loadUsers();
-    } else {
-      alert(d.message || "Lỗi!");
-    }
-
-  }catch(e){
-    alert("Server lỗi!");
-  }
+// ADD
+function addUser(){
+  fetch(API + "/add_user", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      username: document.getElementById("newUser").value,
+      password: document.getElementById("newPass").value,
+      role: document.getElementById("newRole").value
+    })
+  }).then(loadUsers)
 }
 
 // DELETE
-async function delUser(u){
-  if(!confirm("Xóa user " + u + " ?")) return;
-
-  try{
-    await fetch(API + "/delete/" + u,{
-      method:"DELETE"
-    });
-
-    loadUsers();
-
-  }catch(e){
-    alert("Lỗi server!");
-  }
+function deleteUser(username){
+  fetch(API + "/delete/" + username, {
+    method: "DELETE"
+  }).then(loadUsers)
 }
 
-loadUsers();
+loadUsers()
 </script>
+
+</body>
+</html>

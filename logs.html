@@ -1,37 +1,53 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<title>Logs</title>
-<link rel="stylesheet" href="style.css">
+  <title>Logs</title>
 </head>
-
 <body>
 
-<div class="container">
-<h2>Logs</h2>
-<ul id="list"></ul>
-</div>
+<h2>📊 Lịch sử sử dụng</h2>
+
+<a href="dashboard.html">🏠 Dashboard</a> |
+<a href="user.html">👑 User</a>
+
+<table border="1">
+  <thead>
+    <tr>
+      <th>Time</th>
+      <th>User</th>
+      <th>Device</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody id="logTable"></tbody>
+</table>
 
 <script>
-const API = "https://smarthome-github-io-7.onrender.com";
+const API = "http://localhost:10000"
 
-async function load(){
-  let r = await fetch(API+"/logs");
-  let d = await r.json();
+function loadLogs(){
+  fetch(API + "/logs")
+    .then(res => res.json())
+    .then(data => {
+      let html = ""
 
-  let list = document.getElementById("list");
-  list.innerHTML="";
+      data.logs.forEach(log => {
+        html += `
+          <tr>
+            <td>${log.time}</td>
+            <td>${log.user}</td>
+            <td>${log.device}</td>
+            <td>${log.action}</td>
+          </tr>
+        `
+      })
 
-  d.logs.forEach(log=>{
-    let li = document.createElement("li");
-    li.innerText = log.time + " | " + log.user;
-    list.appendChild(li);
-  });
+      document.getElementById("logTable").innerHTML = html
+    })
 }
 
-setInterval(load,2000);
-load();
+loadLogs()
+setInterval(loadLogs, 2000)
 </script>
 
 </body>
