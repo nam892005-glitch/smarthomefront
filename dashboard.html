@@ -20,19 +20,21 @@
 
 <script>
 const API = "https://smarthome-github-io-7.onrender.com"
-const user = localStorage.getItem("user")
+// SỬA TẠI ĐÂY: Đổi tên biến thành 'me' để không trùng ID thẻ <span>
+const me = localStorage.getItem("user")
 
-if(!user){
+if(!me){
   window.location.href = "index.html"
 }
 
-document.getElementById("user").innerText = user
+document.getElementById("user").innerText = me
 
 function light(state){
   fetch(API + "/light", {
     method: "POST",
     headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ state, user })
+    // SỬA TẠI ĐÂY: Truyền 'me' vào trường 'user'
+    body: JSON.stringify({ state: state, user: me })
   })
 }
 
@@ -40,7 +42,8 @@ function door(){
   fetch(API + "/door", {
     method: "POST",
     headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ user })
+    // SỬA TẠI ĐÂY: Truyền 'me' vào trường 'user'
+    body: JSON.stringify({ user: me })
   })
 }
 
