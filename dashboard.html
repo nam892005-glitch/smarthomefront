@@ -1,54 +1,37 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Dashboard</title>
-</head>
+<head><title>Dashboard</title><meta charset="UTF-8"></head>
 <body>
+    <h2>Xin chào: <span id="userDisp"></span></h2>
+    <a href="log.html">📊 Nhật ký</a> | <a href="user.html">👑 Quản lý</a> | <button onclick="logout()">Thoát</button>
+    <hr>
+    <h3>Thiết bị</h3>
+    <button onclick="sendCmd('light', 'ON')">Bật Đèn</button>
+    <button onclick="sendCmd('light', 'OFF')">Tắt Đèn</button>
+    <button onclick="sendCmd('door', 'OPEN')">Mở Cửa</button>
 
-<h2>Xin chào: <span id="user"></span></h2>
+    <script>
+        const API = "https://smarthome-github-io-7.onrender.com";
+        const user = localStorage.getItem("user");
 
-<a href="log.html">📊 Xem Logs</a> |
-<a href="user.html">👑 Quản lý user</a> |
-<button onclick="logout()">Logout</button>
+        if(!user) window.location.href = "index.html";
+        document.getElementById("userDisp").innerText = user;
 
-<hr>
+        function sendCmd(device, action) {
+            fetch(API + "/control", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ 
+                    device: device, 
+                    action: action, 
+                    user: user // Truyền user từ localStorage vào đây
+                })
+            }).then(res => res.json()).then(d => {
+                if(d.success) console.log("Lệnh đã gửi!");
+            });
+        }
 
-<h3>Điều khiển</h3>
-<button onclick="light('ON')">Bật đèn</button>
-<button onclick="light('OFF')">Tắt đèn</button>
-<button onclick="door()">Mở cửa</button>
-
-<script>
-const API = "https://smarthome-github-io-7.onrender.com"
-const user = localStorage.getItem("user")
-
-if(!user){
-  window.location.href = "index.html"
-}
-
-document.getElementById("user").innerText = user
-
-function light(state){
-  fetch(API + "/light", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ state, user })
-  })
-}
-
-function door(){
-  fetch(API + "/door", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ user })
-  })
-}
-
-function logout(){
-  localStorage.clear()
-  window.location.href = "index.html"
-}
-</script>
-
+        function logout() { localStorage.clear(); window.location.href = "index.html"; }
+    </script>
 </body>
 </html>
