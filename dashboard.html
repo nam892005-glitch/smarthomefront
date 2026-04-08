@@ -15,8 +15,13 @@
 <hr>
 
 <h3>Điều khiển</h3>
-<button onclick="light('ON')">Bật đèn</button>
-<button onclick="light('OFF')">Tắt đèn</button>
+<label class="switch">
+  <input type="checkbox" id="lightSwitch" onchange="toggleLight()">
+  <span class="slider"></span>
+</label>
+
+<span id="lightStatus">Đèn đang tắt</span>
+
 <button onclick="door()">Mở cửa</button>
 </div>
 <script>
@@ -51,6 +56,20 @@ function door(){
 function logout(){
   localStorage.clear()
   window.location.href = "index.html"
+}
+function toggleLight(){
+  const isOn = document.getElementById("lightSwitch").checked
+  const state = isOn ? "ON" : "OFF"
+
+  fetch(API + "/light", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ state: state, user: me })
+  })
+
+  document.getElementById("lightStatus").innerText = isOn
+    ? "Đèn đang bật"
+    : "Đèn đang tắt"
 }
 </script>
 
