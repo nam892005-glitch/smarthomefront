@@ -50,11 +50,12 @@ if(role !== "admin"){
 
 // LOAD USER
 function loadUsers(){
-  fetch(API + "/users")
+  fetch(API + "/users", {
+    headers: { "ngrok-skip-browser-warning": "true" } // THÊM DÒNG NÀY
+  })
     .then(res => res.json())
     .then(data => {
       let html = ""
-
       data.users.forEach(u => {
         html += `
           <tr>
@@ -64,7 +65,6 @@ function loadUsers(){
           </tr>
         `
       })
-
       document.getElementById("userTable").innerHTML = html
     })
 }
@@ -73,7 +73,10 @@ function loadUsers(){
 function addUser(){
   fetch(API + "/add_user", {
     method: "POST",
-    headers: {"Content-Type": "application/json"},
+    headers: {
+      "Content-Type": "application/json",
+      "ngrok-skip-browser-warning": "true" // THÊM DÒNG NÀY
+    },
     body: JSON.stringify({
       username: document.getElementById("newUser").value,
       password: document.getElementById("newPass").value,
@@ -85,7 +88,8 @@ function addUser(){
 // DELETE
 function deleteUser(username){
   fetch(API + "/delete/" + username, {
-    method: "DELETE"
+    method: "DELETE",
+    headers: { "ngrok-skip-browser-warning": "true" } // THÊM DÒNG NÀY
   }).then(loadUsers)
 }
 

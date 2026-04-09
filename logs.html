@@ -27,11 +27,12 @@
 const API = "https://otherguess-contracted-ezequiel.ngrok-free.dev"
 
 function loadLogs(){
-  fetch(API + "/logs")
+  fetch(API + "/logs", {
+    headers: { "ngrok-skip-browser-warning": "true" } // THÊM DÒNG NÀY
+  })
     .then(res => res.json())
     .then(data => {
       let html = ""
-
       data.logs.forEach(log => {
         html += `
           <tr>
@@ -42,7 +43,6 @@ function loadLogs(){
           </tr>
         `
       })
-
       document.getElementById("logTable").innerHTML = html
     })
 }
