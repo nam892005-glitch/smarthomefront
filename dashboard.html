@@ -38,8 +38,10 @@ document.getElementById("user").innerText = me
 function light(state){
   fetch(API + "/light", {
     method: "POST",
-    headers: {"Content-Type": "application/json"},
-    // SỬA TẠI ĐÂY: Truyền 'me' vào trường 'user'
+    headers: {
+      "Content-Type": "application/json",
+      "ngrok-skip-browser-warning": "true" // THÊM DÒNG NÀY
+    },
     body: JSON.stringify({ state: state, user: me })
   })
 }
@@ -47,8 +49,10 @@ function light(state){
 function door(){
   fetch(API + "/door", {
     method: "POST",
-    headers: {"Content-Type": "application/json"},
-    // SỬA TẠI ĐÂY: Truyền 'me' vào trường 'user'
+    headers: {
+      "Content-Type": "application/json",
+      "ngrok-skip-browser-warning": "true" // THÊM DÒNG NÀY
+    },
     body: JSON.stringify({ user: me })
   })
 }

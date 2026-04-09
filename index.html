@@ -26,7 +26,10 @@ const API = "https://otherguess-contracted-ezequiel.ngrok-free.dev"
 function login(){
   fetch(API + "/login", {
     method: "POST",
-    headers: {"Content-Type": "application/json"},
+    headers: {
+      "Content-Type": "application/json",
+      "ngrok-skip-browser-warning": "true" // THÊM DÒNG NÀY
+    },
     body: JSON.stringify({
       username: document.getElementById("username").value,
       password: document.getElementById("password").value
